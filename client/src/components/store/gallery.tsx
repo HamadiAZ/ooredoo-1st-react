@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { imageGalleryArrayType } from "../../types/types";
 //icons
 import { AiOutlineArrowLeft, AiOutlineArrowRight } from "react-icons/ai";
@@ -20,19 +20,6 @@ export default function Gallery({
   const [galleryCounter, setGalleryCounter] = useState(1);
 
   let galleryCurrentImage = `${storePath}/gallery/${galleryCounter + 1}.png`;
-
-  useEffect((): void => {
-    getGalleryImagesArray();
-  }, []);
-
-  useEffect((): (() => void) => {
-    const interval = setInterval(() => {
-      if (Date.now() - lastTimeMainImageChanged > 3000) {
-        updateImage();
-      }
-    }, 500);
-    return (): void => clearInterval(interval);
-  }, [galleryCounter]);
 
   async function getGalleryImagesArray() {
     try {
@@ -60,13 +47,19 @@ export default function Gallery({
     }
   }
 
-  function handleGalleryLeftArrowClick(): void {
-    updateImage("left");
-  }
+  useEffect((): void => {
+    getGalleryImagesArray();
+  }, []);
 
-  function handleGalleryRightArrowClick(): void {
-    updateImage("right");
-  }
+  useEffect((): (() => void) => {
+    // update the wallpaper if 3 seconds passed from last change
+    const interval = setInterval(() => {
+      if (Date.now() - lastTimeMainImageChanged > 3000) {
+        updateImage();
+      }
+    }, 500);
+    return (): void => clearInterval(interval);
+  }, [galleryCounter]);
 
   return (
     <div className="image-gallery">
@@ -74,13 +67,13 @@ export default function Gallery({
       <div id="store-hidden-div--gallery-buttons-container">
         <div
           className="arrows-leftandright-divs"
-          onClick={handleGalleryLeftArrowClick}
+          onClick={(): void => updateImage("left")}
         >
-          <AiOutlineArrowLeft className="gallery-arrows" />
+          <AiOutlineArrowLeft className="gallery-arrows" />s
         </div>
         <div
           className="arrows-leftandright-divs"
-          onClick={handleGalleryRightArrowClick}
+          onClick={(): void => updateImage("right")}
         >
           <AiOutlineArrowRight className="gallery-arrows" />
         </div>

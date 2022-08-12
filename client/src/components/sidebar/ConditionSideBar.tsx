@@ -1,6 +1,6 @@
-import React from "react";
-
-export function Conditions1(props: any) {
+// this one just auto generated JSX from a html code
+// just to fill some space :D
+export function Conditions1(props: any): JSX.Element {
   return (
     <div
       id="boutique_choisi"

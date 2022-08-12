@@ -1,4 +1,4 @@
-import React, { useState, useEffect, EffectCallback } from "react";
+import { useState, useEffect, EffectCallback } from "react";
 import { BiCurrentLocation } from "react-icons/bi";
 import Item from "../home/item";
 import { StoreObjectJSONType } from "../../types/types";
@@ -6,9 +6,7 @@ import { StoreObjectJSONType } from "../../types/types";
 import "./home.css";
 
 export default function Home(): JSX.Element {
-  let data: StoreObjectJSONType[] = [];
-
-  async function getAllStores() {
+  async function getAllStores(): Promise<void> {
     try {
       const response = await fetch("http://localhost:5000/getStores");
       let data: StoreObjectJSONType[] = await response.json();

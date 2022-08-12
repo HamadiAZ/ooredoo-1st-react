@@ -1,12 +1,15 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
+
+import { daysOfWeek } from "../../const/const";
+//icons
 import { IoTicketOutline } from "react-icons/io5";
 import { BsCash } from "react-icons/bs";
 import { AiFillEdit, AiOutlineCreditCard } from "react-icons/ai";
 import { AiOutlineShoppingCart } from "react-icons/ai";
-
 import { BiPackage } from "react-icons/bi";
 import { TbTruckDelivery } from "react-icons/tb";
+
 export default function Item({
   data,
   storePath,
@@ -30,21 +33,12 @@ export default function Item({
     adress: null,
   };
 
-  useEffect(() => {
-    getDistance(
-      selectedItem.latitude,
-      selectedItem.longitude,
-      shopAddress.lat,
-      shopAddress.long
-    );
-  }, [selectedItem]);
-
-  async function getDistance(
+  async function getDistance( // i disabled it to save API usage
     lat1: number,
     long1: number,
     lat2: number,
     long2: number
-  ) {
+  ): Promise<void> {
     /*     try {
       let res = await fetch(
         `https://distance-calculator.p.rapidapi.com/distance/simple?lat_1=${lat1}&long_1=%20${long1}&lat_2=${lat2}&long_2=${long2}&decimal_places=2`,
@@ -58,32 +52,10 @@ export default function Item({
     } */
   }
 
-  /*   0:
-  endH: 10
-  endM: 0
-  fulltime: true
-  index: 0
-  startH: 8
-  startM: 0
-  [[Prototype]]: Object
-  1:
-  endH: 17
-  endM: 0
-  index: 1
-  startH: 13 */
   const d = new Date();
   function getCurrenDayAsString(): string {
     const dayNumber: number = d.getDay();
-    const daysOfWeek: any = {
-      0: "san",
-      1: "mon",
-      2: "tue",
-      3: "wed",
-      4: "thu",
-      5: "fri",
-      6: "sat",
-    };
-    return daysOfWeek[dayNumber];
+    return daysOfWeek[dayNumber as keyof typeof daysOfWeek];
   }
   function isShopOpen(): boolean {
     const hoursNow = d.getHours();
@@ -93,7 +65,6 @@ export default function Item({
 
     for (let group of schedule) {
       if (group.days[currentDay]) {
-        let isOpen: boolean = false;
         for (let singleSession of group.schedule) {
           if (singleSession.startH < hoursNow && hoursNow < singleSession.endH)
             return true;
@@ -138,6 +109,15 @@ export default function Item({
     }
     return false;
   }
+
+  useEffect((): void => {
+    getDistance(
+      selectedItem.latitude,
+      selectedItem.longitude,
+      shopAddress.lat,
+      shopAddress.long
+    );
+  }, [selectedItem]);
 
   return (
     <Link to={`/${data.store_id || 0}/shops/${data.id || 0}`}>

@@ -1,10 +1,9 @@
-import React from "react";
 import { Link } from "react-router-dom";
 // icons
 import { FiMail } from "react-icons/fi";
 import { RiLockPasswordLine } from "react-icons/ri";
 
-export default function ConnectionSideBar(props: any) {
+export default function ConnectionSideBar(props: any): JSX.Element {
   return (
     <div>
       {/* the actual side bar */}
@@ -41,14 +40,14 @@ export default function ConnectionSideBar(props: any) {
       <p style={{ textAlign: "left" }}>En continuant, vous acceptez nos :</p>
       <ul id="conditionsGeneraleList">
         <li
-          onClick={() => {
+          onClick={(): void => {
             props.setOpenedPage("conditions1");
           }}
         >
           Conditions Générales d'Utilisation
         </li>
         <li
-          onClick={() => {
+          onClick={(): void => {
             props.setOpenedPage("conditions2");
           }}
         >

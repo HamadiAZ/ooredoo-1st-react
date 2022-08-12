@@ -1,6 +1,11 @@
 import { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
-import { ShopObjectJSONType, ScheduleOfEveryDayType } from "../../types/types";
+import {
+  ShopObjectJSONType,
+  ScheduleOfEveryDayType,
+  daysOfWeekType,
+} from "../../types/types";
+import { daysOfWeek } from "../../const/const";
 
 import "../../styles/shop.css";
 const initialState = {
@@ -13,25 +18,20 @@ const initialState = {
   san: [],
 };
 
-export default function Shop({ globalPath }: { globalPath: string }) {
-  const ScheduleOfEveryDayConst: ScheduleOfEveryDayType = {
-    mon: [],
-    tue: [],
-    wed: [],
-    thu: [],
-    fri: [],
-    sat: [],
-    san: [],
-  };
+export default function Shop({
+  globalPath,
+}: {
+  globalPath: string;
+}): JSX.Element {
+  const ScheduleOfEveryDayConst: ScheduleOfEveryDayType = initialState;
+  let { shopId } = useParams();
 
   const [scheduleOfEveryDay, setScheduleOfEveryDay] =
     useState<ScheduleOfEveryDayType>(initialState);
 
-  let { shopId } = useParams();
   const [shopData, setShopData] = useState<ShopObjectJSONType>();
 
-  //console.log(shopData);
-  async function getShopData() {
+  async function getShopData(): Promise<void> {
     try {
       let res = await fetch(globalPath + "/api/getShopData/" + shopId);
       let data: any = await res.json();
@@ -46,22 +46,13 @@ export default function Shop({ globalPath }: { globalPath: string }) {
   let long = shopData ? shopData.address.long : 0;
   let lat = shopData ? shopData.address.lat : 0;
   let name = shopData ? shopData.name : "";
-  //console.log(shopData?.schedule);
 
   const d = new Date();
-  const daysOfWeek: any = {
-    0: "san",
-    1: "mon",
-    2: "tue",
-    3: "wed",
-    4: "thu",
-    5: "fri",
-    6: "sat",
-  };
+
   function getCurrenDayAsString(): string {
     const dayNumber: number = d.getDay();
 
-    return daysOfWeek[dayNumber];
+    return daysOfWeek[dayNumber as keyof typeof daysOfWeek];
   }
   function isShopOpenNow(): boolean {
     const hoursNow = d.getHours();
@@ -124,9 +115,17 @@ export default function Shop({ globalPath }: { globalPath: string }) {
       const { schedule } = shopData;
       for (let i = 0; i < 7; i++) {
         for (let group of schedule) {
-          if (group.days[daysOfWeek[i] as keyof typeof group.days]) {
+          if (
+            group.days[
+              daysOfWeek[
+                i as keyof typeof daysOfWeek
+              ] as keyof typeof group.days
+            ]
+          ) {
             ScheduleOfEveryDayConst[
-              daysOfWeek[i] as keyof typeof ScheduleOfEveryDayConst
+              daysOfWeek[
+                i as keyof typeof daysOfWeek
+              ] as keyof typeof ScheduleOfEveryDayConst
             ] = group.schedule;
           }
         }
@@ -138,7 +137,7 @@ export default function Shop({ globalPath }: { globalPath: string }) {
   useEffect(() => {
     getShopData();
   }, []);
-  useEffect(() => {
+  useEffect((): void => {
     setScheduleOfShop();
   }, [shopData]);
   //

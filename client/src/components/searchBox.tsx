@@ -1,15 +1,20 @@
-import React from "react";
 import { FaSearchLocation } from "react-icons/fa";
-import { JsxElement } from "typescript";
 
 export default function SearchBox({
   input,
-  handleInputChange,
-  handleSearchClick,
   suggestionState,
   suggestionDataArray,
+  handleInputChange,
+  handleSearchClick,
   handleItemClick,
-}: any): any {
+}: {
+  input: { address: string };
+  suggestionDataArray: {}[];
+  suggestionState: boolean;
+  handleInputChange: (event: any) => void;
+  handleItemClick: (arg: any) => void;
+  handleSearchClick: () => void;
+}): JSX.Element {
   return (
     <div id="search-box-container">
       <input
@@ -23,7 +28,9 @@ export default function SearchBox({
         value={input.address}
         onChange={handleInputChange}
       />
+
       <FaSearchLocation id="search-for-address" onClick={handleSearchClick} />
+
       <ul id="search-suggestions">
         {suggestionState &&
           suggestionDataArray.map((item: any) => (

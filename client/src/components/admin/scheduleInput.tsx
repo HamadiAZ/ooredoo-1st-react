@@ -1,9 +1,8 @@
-import React, { useState, useEffect } from "react";
-import { scheduleObjectType } from "../../types/types";
 //icons
 import { AiFillDelete } from "react-icons/ai";
 import { BiAlarmAdd } from "react-icons/bi";
 import { BsCalendarDay } from "react-icons/bs";
+
 export default function ScheduleInput({
   group_id,
   index,
@@ -84,7 +83,7 @@ export default function ScheduleInput({
             : "add-shop--horaire-input-error"
         }
       ></input>
-      {index == 0 ? (
+      {index === 0 ? (
         <>
           <BiAlarmAdd
             onClick={handleAddSchedule}
@@ -95,7 +94,7 @@ export default function ScheduleInput({
               cursor: "pointer",
             }}
           />
-          {group_id == 0 ? (
+          {group_id === 0 ? (
             <BsCalendarDay
               onClick={handleAddScheduleGroup}
               style={{

@@ -1,6 +1,3 @@
-import React from "react";
-import { TextSpan } from "typescript";
-
 export default function Footer(): JSX.Element {
   return (
     <footer>
@@ -42,7 +39,7 @@ export default function Footer(): JSX.Element {
         <p>Tous droits réservés -Ooredoo shops by Hammadi</p>
         <p>
           Softavera N°1 des solutions d'encaissement, caisse tactile, borne de
-          commande, click & collect site web commande en ligne..., plus d’infos
+          commande, click et collect site web commande en ligne..., plus d’infos
           : www.softavera.fr
         </p>
       </div>

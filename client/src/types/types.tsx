@@ -4,6 +4,22 @@ export type StoreObjectJSONType = {
   shops: number | null;
   img: string;
 };
+
+export type addShopInputType = {
+  name: string;
+  address: string;
+  store: number;
+  long: number;
+  lat: number;
+  surplace: boolean;
+  delivery: boolean;
+  export: boolean;
+  cash: boolean;
+  cc: boolean;
+  check: boolean;
+  voucher: boolean;
+};
+
 export type imageGalleryArrayType = string[];
 
 export type ShopObjectJSONType = {
@@ -47,6 +63,7 @@ export type fullScheduleGroupType = {
   schedule: scheduleObjectType[];
   formCheck: boolean;
 };
+
 export type ScheduleOfEveryDayType = {
   mon: scheduleObjectType[];
   tue: scheduleObjectType[];
@@ -55,4 +72,16 @@ export type ScheduleOfEveryDayType = {
   fri: scheduleObjectType[];
   sat: scheduleObjectType[];
   san: scheduleObjectType[];
+};
+
+//consts :
+
+export type daysOfWeekType = {
+  0: "san";
+  1: "mon";
+  2: "tue";
+  3: "wed";
+  4: "thu";
+  5: "fri";
+  6: "sat";
 };

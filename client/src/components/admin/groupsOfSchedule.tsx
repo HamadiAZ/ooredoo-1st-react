@@ -99,7 +99,7 @@ export default function GroupsOfSchedule({
     setIsFullTime(false);
   }
   function handleDeleteSchedule(index: number) {
-    schedule = schedule.filter((item: any) => item != schedule[index]);
+    schedule = schedule.filter((item: any) => item !== schedule[index]);
     updateFullSchedule(schedule);
   }
 
@@ -131,10 +131,11 @@ export default function GroupsOfSchedule({
     e: React.KeyboardEvent<HTMLInputElement>
   ) {
     schedule = schedule.map((item: scheduleObjectType) => {
-      if (item.index == parseInt(e.target.id)) {
+      const target = e.target as HTMLInputElement;
+      if (item.index === parseInt(target.id)) {
         return {
           ...item,
-          [e.target.name]: parseInt(e.target.value),
+          [target.name]: parseInt(target.value),
         };
       } else return item;
     });

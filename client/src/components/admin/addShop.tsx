@@ -1,56 +1,68 @@
-import { useState, useEffect, useRef, Ref } from "react";
+import { useState, useEffect, useRef } from "react";
 
-import { StoreObjectJSONType } from "../../types/types";
 import SearchBox from "../searchBox";
-
-import { fullScheduleGroupType } from "../../types/types";
 import GroupsOfSchedule from "./groupsOfSchedule";
+
+import {
+  ShopObjectJSONType,
+  fullScheduleGroupType,
+  StoreObjectJSONType,
+  addShopInputType,
+} from "../../types/types";
+
+const arrayInit: fullScheduleGroupType[] = [
+  {
+    id: 0,
+    days: {
+      mon: true,
+      tue: true,
+      wed: true,
+      thu: true,
+      fri: true,
+      sat: true,
+      san: false,
+    },
+    schedule: [
+      {
+        startH: 8,
+        startM: 0,
+        endH: 16,
+        endM: 0,
+        index: 0,
+        fulltime: false,
+      },
+    ],
+    formCheck: true,
+  },
+];
+
+const inputInit: addShopInputType = {
+  name: "kebeli",
+  address: "rue meed ali",
+  store: 1,
+  long: 8,
+  lat: 22,
+  surplace: false,
+  delivery: false,
+  export: false,
+  cash: false,
+  cc: false,
+  check: false,
+  voucher: false,
+};
+
 export default function AddShop(props: any) {
   const confirmationRef = useRef<HTMLParagraphElement>(null);
+
+  //states
   const [suggestionState, setSuggestionState] = useState<boolean>(false);
   const [suggestionDataArray, setSuggestionDataArray] = useState<any[]>([]);
   const [stores, setStores] = useState<StoreObjectJSONType[]>([]);
 
-  const [fullSchedule, setFullSchedule] = useState<fullScheduleGroupType[]>([
-    {
-      id: 0,
-      days: {
-        mon: true,
-        tue: true,
-        wed: true,
-        thu: true,
-        fri: true,
-        sat: true,
-        san: false,
-      },
-      schedule: [
-        {
-          startH: 8,
-          startM: 0,
-          endH: 16,
-          endM: 0,
-          index: 0,
-          fulltime: false,
-        },
-      ],
-      formCheck: true,
-    },
-  ]);
+  const [fullSchedule, setFullSchedule] =
+    useState<fullScheduleGroupType[]>(arrayInit);
 
-  const [input, setInput] = useState({
-    name: "kebeli",
-    address: "rue meed ali",
-    store: 1,
-    long: 8,
-    lat: 22,
-    surplace: false,
-    delivery: false,
-    export: false,
-    cash: false,
-    cc: false,
-    check: false,
-    voucher: false,
-  });
+  const [input, setInput] = useState(inputInit);
 
   function handleInputChange(event: any): void {
     const target = event.target;
@@ -84,14 +96,7 @@ export default function AddShop(props: any) {
   }
   async function handleSubmit(event: any): Promise<void> {
     event.preventDefault();
-    let jsonObjectToSend: {
-      store_id: number;
-      name: string;
-      address: {};
-      mdp: {};
-      mdv: {};
-      schedule: {}[];
-    } = {
+    let jsonObjectToSend: ShopObjectJSONType = {
       store_id: input.store,
       name: input.name,
       address: { address: input.address, lat: input.lat, long: input.long },
@@ -125,7 +130,6 @@ export default function AddShop(props: any) {
           referrerPolicy: "no-referrer", // no-referrer, *no-referrer-when-downgrade, origin, origin-when-cross-origin, same-origin, strict-origin, strict-origin-when-cross-origin, unsafe-url
           body: JSON.stringify(jsonObjectToSend),
         });
-        //console.log(await res.json());
 
         if (confirmationRef.current != undefined) {
           confirmationRef.current.innerText = "Shop added !";
@@ -200,48 +204,12 @@ export default function AddShop(props: any) {
       return [...prev, newGroup];
     });
   }
+
   function handleDeleteGroup(group_id: number): void {
     setFullSchedule((prev): fullScheduleGroupType[] =>
-      prev.filter((group) => group.id != group_id)
+      prev.filter((group) => group.id !== group_id)
     );
   }
-  //console.log(fullSchedule);
-  //let partialCheckScheduleValue = partialCheckSchedule();
-  // let arrayOfGroups = getArrayOfGroups();
-  /*   function countNumberOfGroups(schedule: any): number {
-    let numberOfGroups = 1;
-    for (let item of schedule) {
-      if (item.daysGroupId + 1 > numberOfGroups) numberOfGroups++;
-    }
-    return numberOfGroups;
-  } */
-  /*   function countItemsInDoubleNestedArrays(
-    array: scheduleObjectType[][]
-  ): number {
-    let number = 0;
-    if (array) {
-      for (let item of array) {
-        number += item.length;
-      }
-    }
-    return number;
-  } */
-  /* function getArrayOfGroups(schedule: any) {
-    let arrayOfGroups: scheduleObjectType[][] = [[schedule[0]]];
-    let foundDaysContainersCounter = 1;
-    let numberOfGroups = countNumberOfGroups(5); // change this
-    while (
-      foundDaysContainersCounter < numberOfGroups &&
-      countItemsInDoubleNestedArrays(arrayOfGroups) != schedule.length
-    ) {
-      for (let item of schedule) {
-        if (item.daysGroupId == foundDaysContainersCounter - 1) {
-          arrayOfGroups[foundDaysContainersCounter - 1].push(item);
-        }
-      }
-      foundDaysContainersCounter++;
-    }
-  } */
 
   // return *****************************************
 

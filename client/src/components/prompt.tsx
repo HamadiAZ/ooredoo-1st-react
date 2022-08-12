@@ -1,7 +1,4 @@
-import React from "react";
-
 export default function Prompt({ setPrompt, Function, action }: any) {
-  //console.log(action);
   return (
     <div id="prompt-root-container" onClick={() => setPrompt(false)}>
       <div
