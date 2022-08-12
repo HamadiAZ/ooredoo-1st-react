@@ -1,10 +1,7 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect,useMemo } from "react";
 import { useParams } from "react-router-dom";
-import {
-  ShopObjectJSONType,
-  ScheduleOfEveryDayType,
-  daysOfWeekType,
-} from "../../types/types";
+
+import { ShopObjectJSONType, ScheduleOfEveryDayType } from "../../types/types";
 import { daysOfWeek } from "../../const/const";
 
 import "../../styles/shop.css";
@@ -23,13 +20,25 @@ export default function Shop({
 }: {
   globalPath: string;
 }): JSX.Element {
-  const ScheduleOfEveryDayConst: ScheduleOfEveryDayType = initialState;
   let { shopId } = useParams();
 
-  const [scheduleOfEveryDay, setScheduleOfEveryDay] =
-    useState<ScheduleOfEveryDayType>(initialState);
-
-  const [shopData, setShopData] = useState<ShopObjectJSONType>();
+  const [shopData, setShopData] = useState<ShopObjectJSONType>({
+    store_id: 9999,
+    name: "looooool",
+    address: { address: "a", lat: 1, long: 1 },
+    mdv: {
+      surplace: false,
+      delivery: false,
+      export: false,
+    },
+    mdp: {
+      cash: false,
+      check: false,
+      voucher: false,
+      cc: false,
+    },
+    schedule: []
+  });
 
   async function getShopData(): Promise<void> {
     try {
@@ -42,10 +51,10 @@ export default function Shop({
     }
   }
 
-  let address = shopData ? shopData.address.address : 0;
-  let long = shopData ? shopData.address.long : 0;
-  let lat = shopData ? shopData.address.lat : 0;
-  let name = shopData ? shopData.name : "";
+  const address = shopData ? shopData.address.address : 0;
+  const long = shopData ? shopData.address.long : 0;
+  const lat = shopData ? shopData.address.lat : 0;
+  const name = shopData ? shopData.name : "";
 
   const d = new Date();
 
@@ -110,8 +119,10 @@ export default function Shop({
     }
     return false;
   }
-  function setScheduleOfShop(): void {
-    if (shopData) {
+
+  function getScheduleOfShop(): any {
+    let ScheduleOfEveryDayConst: ScheduleOfEveryDayType = initialState;
+    
       const { schedule } = shopData;
       for (let i = 0; i < 7; i++) {
         for (let group of schedule) {
@@ -130,17 +141,16 @@ export default function Shop({
           }
         }
       }
-      setScheduleOfEveryDay(ScheduleOfEveryDayConst);
-    }
+     return ScheduleOfEveryDayConst
   }
+
 
   useEffect(() => {
     getShopData();
   }, []);
-  useEffect((): void => {
-    setScheduleOfShop();
-  }, [shopData]);
-  //
+
+  const scheduleOfEveryDay = useMemo(() => getScheduleOfShop(),[shopData]);
+  
   return (
     <div>
       <h1>welcome to ooredoo {name} shop</h1>
@@ -154,21 +164,38 @@ export default function Shop({
       </p>
       <div className="shop-div-schedule-root-container">
         {Object.keys(scheduleOfEveryDay).map((item) => {
-          return (
-            <div key={item} className="shop-single-schedule-column-container">
-              <p>{item}</p>
-              <ul>
-                {scheduleOfEveryDay["mon"].map((item: any) => {
-                  return (
-                    <li key={item.index}>
-                      <span>{`${item.startH}:${item.startM}-${item.endH}:${item.endM}`}</span>
-                    </li>
-                  );
-                  // we have to change spans background color
-                })}
-              </ul>
-            </div>
-          );
+          if (
+            scheduleOfEveryDay[item as keyof typeof scheduleOfEveryDay].length
+          ) {
+            return (
+              <div key={item} className="shop-single-schedule-column-container">
+                <p>{item}</p>
+                <ul>
+                  {scheduleOfEveryDay[
+                    item as keyof typeof scheduleOfEveryDay
+                  ].map((item: any) => {
+                    return (
+                      <li key={item.index}>
+                        <span>{`${item.startH}:${item.startM}-${item.endH}:${item.endM}`}</span>
+                      </li>
+                    );
+                    // we have to change spans background color
+                  })}
+                </ul>
+              </div>
+            );
+          } else {
+            return (
+              <div key={item} className="shop-single-schedule-column-container">
+                <p>{item}</p>
+                <ul>
+                  <li>
+                    <span>closed</span>
+                  </li>
+                </ul>
+              </div>
+            );
+          }
         })}
       </div>
       <div className="shop-div-double-items-flex-container">
