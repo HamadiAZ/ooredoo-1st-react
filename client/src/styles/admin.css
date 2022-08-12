@@ -1,0 +1,206 @@
+#admin-page--main-container {
+  min-height: 30rem;
+  display: flex;
+  justify-content: center;
+  flex-direction: column;
+}
+
+#admin-page--main-container table {
+  gap: 2rem;
+  width: 80%;
+}
+#admin-page--main-container th {
+  text-align: left;
+  min-width: 5rem;
+}
+#admin-page--main-container td {
+  height: 2.3rem;
+  text-align: left;
+}
+#admin-page--main-container tr:hover {
+  background-color: coral;
+}
+#add-shop-main {
+  width: 100%;
+}
+#add-admin-form {
+  grid-auto-rows: min-content;
+  margin: 0 auto;
+  max-width: 40rem;
+  display: grid;
+  grid-template-columns: 1fr 2fr;
+  grid-template-rows: fit-content;
+  font-family: "Franklin Gothic Medium", "Arial Narrow", Arial, sans-serif;
+  text-align: left;
+  font-size: 1.2rem;
+  gap: 1.4rem;
+}
+#add-admin-form label {
+  text-align: right;
+  margin-right: 2rem;
+  padding-top: 0.7rem;
+}
+#add-admin-form p {
+  text-align: right;
+  margin-right: 2rem;
+}
+.checkbox-divs {
+  display: flex;
+  align-items: center;
+  overflow: visible;
+  flex-wrap: nowrap;
+}
+
+.input-fields {
+  width: 80%;
+  transition: width 0.4s ease-in-out;
+  padding: 0;
+  height: 2rem;
+  border: none;
+  border-bottom: solid 2px rgba(27, 27, 27, 0.1);
+}
+.input-fields:focus {
+  width: 100%;
+  outline: none;
+  border-bottom: solid 2px rgba(27, 27, 27, 0.7);
+}
+.input-fields-error {
+  height: 2rem;
+  border: none;
+  border-bottom: solid 2px rgba(255, 0, 0, 0.4);
+}
+.input-fields-error:focus {
+  outline: none;
+  border-bottom: solid 2px rgba(255, 0, 0, 0.9);
+}
+
+#add-admin-form select {
+  max-width: 12rem;
+  border-radius: 4px;
+  background-color: #f1f1f1;
+  margin-top: 1rem;
+  height: 2rem;
+
+  border-bottom: solid 2px rgba(27, 27, 27, 0.1);
+}
+#add-shop--mdv-div {
+  padding-top: 0;
+  margin-top: -1rem;
+  display: flex;
+  justify-content: flex-start;
+  gap: 0.5rem;
+  align-items: center;
+  flex-wrap: wrap;
+}
+#add-shop--mdv-div span {
+  margin-bottom: 5%;
+}
+#add-shop--mdv-div input {
+  height: 1.2rem;
+  width: 1.2rem;
+  box-shadow: 2px 2px 3px rgba(0, 0, 0, 0.4);
+}
+
+#submit {
+  background-color: rgb(255, 187, 0);
+  grid-column: 1/ 2 span;
+  width: 15rem;
+  height: 3rem;
+  margin: 0 auto 0 auto;
+}
+
+#add-shop-schedule--root-container {
+  display: flex;
+  flex-direction: column;
+}
+#add-shop-schedule--root-container:hover {
+  box-shadow: 1px 1px 15px rgba(255, 0, 0, 0.4);
+}
+.add-shop--horaire-input {
+  margin: 0 0.3rem;
+  width: 3rem;
+  height: 2rem;
+  border: none;
+  border-bottom: solid 2px rgba(27, 27, 27, 0.1);
+}
+.add-shop--horaire-input:focus {
+  outline: none;
+  border-bottom: solid 2px rgba(27, 27, 27, 0.7);
+}
+
+.add-shop--horaire-input-error {
+  margin: 0 0.3rem;
+  width: 3.5rem;
+  height: 2rem;
+  border: none;
+  border-bottom: solid 2px rgba(255, 0, 0, 0.4);
+}
+.add-shop--horaire-input-error:focus {
+  outline: none;
+  border-bottom: solid 2px rgba(255, 0, 0, 0.9);
+}
+
+.schedule-single-group-container {
+  padding: 1rem 1.5rem;
+  margin: auto 0;
+  display: flex;
+  align-items: center;
+  flex-direction: column;
+  box-shadow: 0 0 4px rgba(0, 0, 0, 0.4);
+}
+
+.add-shop--schedule-days-container {
+  padding: 0.5rem 0;
+  margin: 0.5rem 0;
+  display: flex;
+  align-items: center;
+  flex-direction: row;
+  border-bottom: solid 1px rgba(0, 0, 0, 0.1);
+}
+.schedule-input--full-inputs-icons-container {
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  margin: 0.3rem 0 0.6rem 0;
+}
+.add-shop--input-times-only-container {
+  display: flex;
+  align-items: center;
+  justify-content: space-evenly;
+}
+.form-confirmation-done {
+  padding: 0;
+  font-family: sans-serif;
+  font-size: 1.3rem;
+  font-weight: bold;
+  color: rgb(31, 189, 28);
+  text-align: center;
+  border: none;
+  border-bottom: none;
+  margin: 2rem 0 4rem 0;
+}
+.form-confirmation-error {
+  font-family: sans-serif;
+  font-size: 1.3rem;
+  font-weight: bold;
+  color: rgb(189, 39, 28);
+  text-align: center;
+  border: solid 2px red;
+  margin: 3rem 0 4rem 0;
+}
+
+@media (max-width: 450px) {
+  #add-admin-form {
+    font-size: 1.1rem;
+    min-width: 23rem;
+    overflow: visible;
+    max-height: 30rem;
+  }
+  #add-shop--mdv-div {
+    margin-top: 0;
+    gap: 0;
+  }
+  label {
+    overflow: hidden;
+  }
+}

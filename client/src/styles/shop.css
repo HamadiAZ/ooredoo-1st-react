@@ -1,0 +1,88 @@
+.shop-div-schedule-root-container {
+  display: grid;
+  grid-template-rows: 1fr;
+  grid-template-columns: minmax(5rem, fit-content);
+  grid-auto-flow: column;
+  max-width: 40rem;
+  margin: 2rem auto;
+  border: solid 1px black;
+}
+
+.shop-div-double-items-flex-container {
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: center;
+  text-align: center;
+  width: 100%;
+  justify-content: space-evenly;
+  margin: 0 auto;
+}
+
+.shop-single-schedule-column-container {
+  display: flex;
+  flex-direction: column;
+  border: solid 1px black;
+}
+.shop-single-schedule-column-container p {
+  background-color: aquamarine;
+  margin: 0;
+  padding: 0.5rem 0;
+}
+
+.shop-single-schedule-column-container ul {
+  align-items: left;
+  margin: 0 0;
+  padding: 0;
+  list-style: none;
+}
+.shop-single-schedule-column-container span {
+  margin: 0;
+  padding: 0;
+  align-self: left;
+  display: flex;
+  min-width: 4rem;
+  font-size: 0.7rem;
+
+  padding: 0.2rem 0.6rem;
+}
+
+.div-card-text {
+  color: #02992a;
+  border-radius: 5px;
+  box-shadow: 3px 4px 8px rgba(20, 20, 20, 0.3);
+  margin: 1rem auto 1rem auto;
+  min-height: 18rem;
+  min-width: 20rem;
+  width: 30rem;
+  align-self: right;
+}
+.div-card-text h4 {
+  display: inline-block;
+}
+.div-card-text p {
+  word-spacing: 3px;
+  line-height: 1.4rem;
+  font-size: 0.9rem;
+  text-align: left;
+  margin-left: 0.4rem;
+  font-family: sans-serif;
+  color: rgba(0, 0, 0, 0.6);
+}
+iframe {
+  margin: 3rem auto;
+  justify-self: center;
+  width: 26rem;
+  height: 20rem;
+}
+@media (max-width: 600px) {
+  #shop-div-double-items-flex-container {
+    flex-wrap: wrap;
+  }
+  .div-card-text {
+    margin: 1rem 1rem 1rem auto;
+    min-height: 16rem;
+    min-width: 17rem;
+    width: 25rem;
+    align-self: right;
+  }
+}

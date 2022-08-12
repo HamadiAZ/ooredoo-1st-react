@@ -1,0 +1,300 @@
+{
+  "id": 31,
+  "name": "jemna",
+  "store_id": 1,
+  "mdv": {
+    "surplace": true,
+    "delivery": false,
+    "export": false
+  },
+  "mdp": {
+    "cash": true,
+    "check": false,
+    "voucher": false,
+    "cc": false
+  },
+  "schedule": [
+    {
+      "id": 0,
+      "days": {
+        "mon": true,
+        "tue": true,
+        "wed": true,
+        "thu": true,
+        "fri": true,
+        "sat": false,
+        "san": false
+      },
+      "schedule": [
+        {
+          "startH": 8,
+          "startM": 0,
+          "endH": 14,
+          "endM": 0,
+          "index": 0,
+          "fulltime": false
+        }
+      ],
+      "formCheck": true
+    },
+    {
+      "id": 1,
+      "days": {
+        "mon": false,
+        "tue": false,
+        "wed": false,
+        "thu": false,
+        "fri": false,
+        "sat": true,
+        "san": false
+      },
+      "schedule": [
+        {
+          "startH": 8,
+          "startM": 0,
+          "endH": 12,
+          "endM": 0,
+          "index": 0,
+          "fulltime": false
+        }
+      ],
+      "formCheck": true
+    }
+  ],
+  "address": {
+    "address": "Djemna, KB, Tunisia",
+    "lat": 33.57778,
+    "long": 9.01472
+  }
+}
+{
+    "mon": [
+        {
+            "startH": 8,
+            "startM": 30,
+            "endH": 10,
+            "endM": 30,
+            "index": 0,
+            "fulltime": false
+        },
+        {
+            "startH": 12,
+            "startM": 0,
+            "endH": 13,
+            "endM": 0,
+            "fulltime": false,
+            "index": 1
+        },
+        {
+            "startH": 14,
+            "startM": 30,
+            "endH": 15,
+            "endM": 30,
+            "fulltime": false,
+            "index": 2
+        },
+        {
+            "startH": 17,
+            "startM": 0,
+            "endH": 18,
+            "endM": 0,
+            "fulltime": false,
+            "index": 3
+        },
+        {
+            "startH": 20,
+            "startM": 10,
+            "endH": 21,
+            "endM": 0,
+            "fulltime": false,
+            "index": 4
+        }
+    ],
+    "tue": [
+        {
+            "startH": 8,
+            "startM": 30,
+            "endH": 10,
+            "endM": 30,
+            "index": 0,
+            "fulltime": false
+        },
+        {
+            "startH": 12,
+            "startM": 0,
+            "endH": 13,
+            "endM": 0,
+            "fulltime": false,
+            "index": 1
+        },
+        {
+            "startH": 14,
+            "startM": 30,
+            "endH": 15,
+            "endM": 30,
+            "fulltime": false,
+            "index": 2
+        },
+        {
+            "startH": 17,
+            "startM": 0,
+            "endH": 18,
+            "endM": 0,
+            "fulltime": false,
+            "index": 3
+        },
+        {
+            "startH": 20,
+            "startM": 10,
+            "endH": 21,
+            "endM": 0,
+            "fulltime": false,
+            "index": 4
+        }
+    ],
+    "wed": [
+        {
+            "startH": 8,
+            "startM": 30,
+            "endH": 10,
+            "endM": 30,
+            "index": 0,
+            "fulltime": false
+        },
+        {
+            "startH": 12,
+            "startM": 0,
+            "endH": 13,
+            "endM": 0,
+            "fulltime": false,
+            "index": 1
+        },
+        {
+            "startH": 14,
+            "startM": 30,
+            "endH": 15,
+            "endM": 30,
+            "fulltime": false,
+            "index": 2
+        },
+        {
+            "startH": 17,
+            "startM": 0,
+            "endH": 18,
+            "endM": 0,
+            "fulltime": false,
+            "index": 3
+        },
+        {
+            "startH": 20,
+            "startM": 10,
+            "endH": 21,
+            "endM": 0,
+            "fulltime": false,
+            "index": 4
+        }
+    ],
+    "thu": [
+        {
+            "startH": 8,
+            "startM": 30,
+            "endH": 10,
+            "endM": 30,
+            "index": 0,
+            "fulltime": false
+        },
+        {
+            "startH": 12,
+            "startM": 0,
+            "endH": 13,
+            "endM": 0,
+            "fulltime": false,
+            "index": 1
+        },
+        {
+            "startH": 14,
+            "startM": 30,
+            "endH": 15,
+            "endM": 30,
+            "fulltime": false,
+            "index": 2
+        },
+        {
+            "startH": 17,
+            "startM": 0,
+            "endH": 18,
+            "endM": 0,
+            "fulltime": false,
+            "index": 3
+        },
+        {
+            "startH": 20,
+            "startM": 10,
+            "endH": 21,
+            "endM": 0,
+            "fulltime": false,
+            "index": 4
+        }
+    ],
+    "fri": [
+        {
+            "startH": 8,
+            "startM": 30,
+            "endH": 10,
+            "endM": 30,
+            "index": 0,
+            "fulltime": false
+        },
+        {
+            "startH": 12,
+            "startM": 0,
+            "endH": 13,
+            "endM": 0,
+            "fulltime": false,
+            "index": 1
+        },
+        {
+            "startH": 14,
+            "startM": 30,
+            "endH": 15,
+            "endM": 30,
+            "fulltime": false,
+            "index": 2
+        },
+        {
+            "startH": 17,
+            "startM": 0,
+            "endH": 18,
+            "endM": 0,
+            "fulltime": false,
+            "index": 3
+        },
+        {
+            "startH": 20,
+            "startM": 10,
+            "endH": 21,
+            "endM": 0,
+            "fulltime": false,
+            "index": 4
+        }
+    ],
+    "sat": [
+        {
+            "startH": 8,
+            "startM": 0,
+            "endH": 10,
+            "endM": 0,
+            "index": 0,
+            "fulltime": false
+        },
+        {
+            "startH": 12,
+            "startM": 0,
+            "endH": 13,
+            "endM": 0,
+            "fulltime": false,
+            "index": 1
+        }
+    ],
+    "san": []
+}
