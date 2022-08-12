@@ -19,14 +19,12 @@ app.listen(5000, () => {});
 // server the public folder as default /
 app.use(express.static("public"));
 
-//handle post reqs coming from client
 //routes
 
 //            admin apis /////////////////////////////////////////////////////////
 app.post("/api/admin/addShop", async (req, res) => {
   try {
     let data = await req.body;
-
     const shopId = await pool.query(`
     INSERT INTO shops( name, mdp, mdv, address,store_id ,schedule)
      VALUES(
@@ -52,7 +50,6 @@ app.get("/api/getStores", async (req, res) => {
   try {
     data = await pool.query("select * from stores");
     res.json(data.rows);
-    console.log(data.rows);
   } catch (error) {
     console.error(error.message);
   }
@@ -62,7 +59,7 @@ app.get(`/api/getGalleryListOfStore/:id`, (req, res) => {
   fs.readdir(`public/stores/${req.params.id}/gallery/`, (err, files) => {
     if (err) {
       res.json("Unable to scan directory: " + err);
-      return console.log("Unable to scan directory: " + err);
+      return "Unable to scan directory: " + err;
     }
     res.json(files);
   });
@@ -70,7 +67,6 @@ app.get(`/api/getGalleryListOfStore/:id`, (req, res) => {
 
 //           shops apis /////////////////////////////////////////////////////////
 app.get("/api/getShops/:id_store", async (req, res) => {
-  console.log(req.params.id_store);
   try {
     data = await pool.query(`select * from shops`);
     res.json(data.rows);
@@ -81,7 +77,6 @@ app.get("/api/getShops/:id_store", async (req, res) => {
 });
 
 app.get("/api/getShopData/:id_shop", async (req, res) => {
-  console.log(req.params.id_shop);
   try {
     data = await pool.query(
       `select * from shops where "id"='${req.params.id_shop}'`
