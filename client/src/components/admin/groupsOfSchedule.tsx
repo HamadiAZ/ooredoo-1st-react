@@ -111,6 +111,7 @@ export default function GroupsOfSchedule({
       endM: 0,
       fulltime: false,
       index: schedule.length,
+      currentOrNextOne:false,
     };
     schedule.push(newSchedule);
     updateFullSchedule(schedule);

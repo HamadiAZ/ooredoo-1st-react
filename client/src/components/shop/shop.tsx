@@ -1,7 +1,7 @@
-import { useState, useEffect,useMemo } from "react";
+import { useState, useEffect,useMemo ,useRef} from "react";
 import { useParams } from "react-router-dom";
 
-import { ShopObjectJSONType, ScheduleOfEveryDayType } from "../../types/types";
+import { ShopObjectJSONType, ScheduleOfEveryDayType ,scheduleObjectType} from "../../types/types";
 import { daysOfWeek } from "../../const/const";
 
 import "../../styles/shop.css";
@@ -22,6 +22,7 @@ export default function Shop({
 }): JSX.Element {
   let { shopId } = useParams();
 
+  let [currentScheduleIndex,currentDayIndex]=[0,""]
   const [shopData, setShopData] = useState<ShopObjectJSONType>({
     store_id: 9999,
     name: "looooool",
@@ -39,6 +40,8 @@ export default function Shop({
     },
     schedule: []
   });
+
+  const timesSpanRef=useRef(null);
 
   async function getShopData(): Promise<void> {
     try {
@@ -76,7 +79,7 @@ export default function Shop({
               singleSession.startH < hoursNow &&
               hoursNow < singleSession.endH
             )
-              return true;
+              return true
             if (
               // time is 9:10 // session 9:20 =>9:30
               singleSession.startH === hoursNow &&
@@ -126,31 +129,157 @@ export default function Shop({
       const { schedule } = shopData;
       for (let i = 0; i < 7; i++) {
         for (let group of schedule) {
-          if (
-            group.days[
-              daysOfWeek[
-                i as keyof typeof daysOfWeek
-              ] as keyof typeof group.days
-            ]
-          ) {
-            ScheduleOfEveryDayConst[
-              daysOfWeek[
-                i as keyof typeof daysOfWeek
-              ] as keyof typeof ScheduleOfEveryDayConst
-            ] = group.schedule;
+          let dayOfWeek=daysOfWeek[i as keyof typeof daysOfWeek] as keyof typeof group.days
+          
+          if (group.days[dayOfWeek]) {
+            let day= daysOfWeek[i as keyof typeof daysOfWeek] as keyof typeof ScheduleOfEveryDayConst
+            const copyOfGroupSchedule=[];
+            for (let item of group.schedule){
+              copyOfGroupSchedule.push({...item}) // copy and not take the same reference
+            }
+            ScheduleOfEveryDayConst[day] = [...copyOfGroupSchedule]; 
           }
         }
       }
+      const currentDay: string = getCurrenDayAsString();
+
+      let currentDaySchedule=ScheduleOfEveryDayConst[currentDay as keyof typeof ScheduleOfEveryDayConst]
+      if(isShopOpenNow()){ //green background somewhere
+        currentDaySchedule.forEach((item)=>{
+          if(checkIfItsCurrentScheduleActiveTime(item)){
+            item.currentOrNextOne=true;
+          }
+          else {item.currentOrNextOne=false;
+        }
+        })
+      }else{ // shop is closed now // blue background somewhere
+        let dayIndex=d.getDay();
+        const arrayOfUpcomingSessionsOfaDay:scheduleObjectType[]=[];
+        for(let counter=0;counter<8;counter++){
+          
+            let day=daysOfWeek[dayIndex as keyof typeof daysOfWeek]; // current day
+            //day index is actual day index corresponding to day position in the week;
+            // counter just to ensure a full week loop
+            let scheduleOfDay=ScheduleOfEveryDayConst[day as keyof typeof ScheduleOfEveryDayConst]
+            let dayFound=false;
+            
+            if(scheduleOfDay.length) //only if the day has opened sessions
+            {
+              if(counter===0) { // current day 
+                // find the next session
+                  for(let singleSession of scheduleOfDay){
+                    if(checkIfItWillOpenInThisSessionOfToday(singleSession)){
+                      dayFound=true;
+                      const singleSessionCopy={...singleSession};
+                      arrayOfUpcomingSessionsOfaDay.push(singleSessionCopy);
+                      console.log("item Added");
+                    }
+                  }
+                  
+              }else{ //upcoming days 
+                //find the first session of the next DAY THAT THE SHOP IS OPENED AT
+                for(let singleSession of scheduleOfDay){
+                  if(singleSession){
+                    console.log("found day");
+                    dayFound=true;
+                    
+                    const daySessionCopy=[...scheduleOfDay];
+                    arrayOfUpcomingSessionsOfaDay.push(...daySessionCopy);
+                    break;
+                  }
+                }
+
+              }
+             
+              if(dayFound) break;
+             
+            }
+            dayIndex = dayIndex<6 ? dayIndex+1 : 0; //check the first day of the next week..
+           
+        }
+        //find the minimum startH : first session 
+        let orderTempArray=[]
+        if(arrayOfUpcomingSessionsOfaDay.length){
+          orderTempArray=arrayOfUpcomingSessionsOfaDay.map((item)=>item.startH)
+          orderTempArray.sort();
+          let nextStartH=orderTempArray[0];
+          let scheduleToChange=getScheduleToChange(dayIndex,nextStartH);
+          scheduleToChange.currentOrNextOne=true;
+        }
+      }
+      function getScheduleToChange(dayIndex:number,nextStartH:number):scheduleObjectType{
+        let day=daysOfWeek[dayIndex as keyof typeof daysOfWeek]; //
+        let scheduleOfDay=ScheduleOfEveryDayConst[day as keyof typeof ScheduleOfEveryDayConst]
+          
+        let found=scheduleOfDay[0];
+        return found;
+    }
+      function checkIfItWillOpenInThisSessionOfToday(singleSession:any):boolean{
+        const hoursNow = d.getHours();
+        const minutesNow = d.getMinutes();
+        if(hoursNow<singleSession.endH) return true
+        if(hoursNow===singleSession.endH && minutesNow<=singleSession.endM) return true
+        return false;
+      }
+      function checkIfItsCurrentScheduleActiveTime(singleSession:any):boolean{
+        const hoursNow = d.getHours();
+        const minutesNow = d.getMinutes();
+        if (
+          singleSession.startH < hoursNow &&
+          hoursNow < singleSession.endH
+        )
+          return true
+        if (
+          // time is 9:10 // session 9:20 =>9:30
+          singleSession.startH === hoursNow &&
+          hoursNow < singleSession.endH &&
+          singleSession.startM > minutesNow
+        )
+          return false;
+        if (
+          // time is 9:10 // session 8:20 =>9:30
+          singleSession.startH < hoursNow &&
+          hoursNow == singleSession.endH &&
+          singleSession.endM > minutesNow
+        )
+          return true;
+        if (
+          // time is 8:30 // session 8:20 =>9:30
+          singleSession.startH == hoursNow &&
+          hoursNow < singleSession.endH &&
+          singleSession.startM < minutesNow
+        )
+          return true;
+        if (
+          // time 15:45 // session 15:10=>15:40
+          singleSession.startH <= hoursNow &&
+          hoursNow === singleSession.endH &&
+          singleSession.endM < minutesNow
+        )
+          return false;
+        if (
+          // time 15:45 // session 15:10=>15:40
+          singleSession.startH === hoursNow &&
+          hoursNow === singleSession.endH &&
+          singleSession.endM > minutesNow &&
+          singleSession.startM < minutesNow
+        )
+          return true;
+        return false
+      }
+
      return ScheduleOfEveryDayConst
   }
 
-
+  
   useEffect(() => {
     getShopData();
   }, []);
 
   const scheduleOfEveryDay = useMemo(() => getScheduleOfShop(),[shopData]);
   
+  //console.log(scheduleOfEveryDay)
+  let styleSpanOfCurrentSchedule=isShopOpenNow() ? {backgroundColor:"green"} : {backgroundColor:"blue"} 
   return (
     <div>
       <h1>welcome to ooredoo {name} shop</h1>
@@ -176,7 +305,7 @@ export default function Shop({
                   ].map((item: any) => {
                     return (
                       <li key={item.index}>
-                        <span>{`${item.startH}:${item.startM}-${item.endH}:${item.endM}`}</span>
+                        <span style={item.currentOrNextOne ? styleSpanOfCurrentSchedule : {backgroundColor:""}}>{`${item.startH}:${item.startM}-${item.endH}:${item.endM}`}</span>
                       </li>
                     );
                     // we have to change spans background color

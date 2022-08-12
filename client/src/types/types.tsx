@@ -47,6 +47,7 @@ export type scheduleObjectType = {
   endM: number;
   index: number;
   fulltime: boolean;
+  currentOrNextOne:boolean;
 };
 
 export type fullScheduleGroupType = {
