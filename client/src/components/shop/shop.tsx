@@ -1,5 +1,6 @@
 import { useState, useEffect,useMemo ,useRef} from "react";
 import { useParams } from "react-router-dom";
+import ScheduleTable from "./scheduleTable"; 
 
 import { ShopObjectJSONType, ScheduleOfEveryDayType ,scheduleObjectType} from "../../types/types";
 import { daysOfWeek } from "../../const/const";
@@ -22,10 +23,9 @@ export default function Shop({
 }): JSX.Element {
   let { shopId } = useParams();
 
-  let [currentScheduleIndex,currentDayIndex]=[0,""]
   const [shopData, setShopData] = useState<ShopObjectJSONType>({
     store_id: 9999,
-    name: "looooool",
+    name: "empty",
     address: { address: "a", lat: 1, long: 1 },
     mdv: {
       surplace: false,
@@ -40,8 +40,6 @@ export default function Shop({
     },
     schedule: []
   });
-
-  const timesSpanRef=useRef(null);
 
   async function getShopData(): Promise<void> {
     try {
@@ -218,7 +216,7 @@ export default function Shop({
         const hoursNow = d.getHours();
         const minutesNow = d.getMinutes();
         if(hoursNow<singleSession.endH) return true
-        if(hoursNow===singleSession.endH && minutesNow<=singleSession.endM) return true
+        if(hoursNow===singleSession.endH && minutesNow<singleSession.endM) return true
         return false;
       }
       function checkIfItsCurrentScheduleActiveTime(singleSession:any):boolean{
@@ -278,7 +276,7 @@ export default function Shop({
 
   const scheduleOfEveryDay = useMemo(() => getScheduleOfShop(),[shopData]);
   
-  //console.log(scheduleOfEveryDay)
+
   let styleSpanOfCurrentSchedule=isShopOpenNow() ? {backgroundColor:"green"} : {backgroundColor:"blue"} 
   return (
     <div>
@@ -286,47 +284,13 @@ export default function Shop({
       <p>
         {"our shop is now "}
         {isShopOpenNow() ? (
-          <span style={{ color: "#02992a", fontWeight: "bold" }}>Open</span>
+          <span style={{ color: "#02992a", fontWeight: "bold" }}>Opened</span>
         ) : (
-          <span style={{ color: "#b80000", fontWeight: "bold" }}>Close</span>
+          <span style={{ color: "#b80000", fontWeight: "bold" }}>Closed</span>
         )}
       </p>
-      <div className="shop-div-schedule-root-container">
-        {Object.keys(scheduleOfEveryDay).map((item) => {
-          if (
-            scheduleOfEveryDay[item as keyof typeof scheduleOfEveryDay].length
-          ) {
-            return (
-              <div key={item} className="shop-single-schedule-column-container">
-                <p>{item}</p>
-                <ul>
-                  {scheduleOfEveryDay[
-                    item as keyof typeof scheduleOfEveryDay
-                  ].map((item: any) => {
-                    return (
-                      <li key={item.index}>
-                        <span style={item.currentOrNextOne ? styleSpanOfCurrentSchedule : {backgroundColor:""}}>{`${item.startH}:${item.startM}-${item.endH}:${item.endM}`}</span>
-                      </li>
-                    );
-                    // we have to change spans background color
-                  })}
-                </ul>
-              </div>
-            );
-          } else {
-            return (
-              <div key={item} className="shop-single-schedule-column-container">
-                <p>{item}</p>
-                <ul>
-                  <li>
-                    <span>closed</span>
-                  </li>
-                </ul>
-              </div>
-            );
-          }
-        })}
-      </div>
+      <ScheduleTable scheduleOfEveryDay={scheduleOfEveryDay} styleSpanOfCurrentSchedule={styleSpanOfCurrentSchedule}/>
+      
       <div className="shop-div-double-items-flex-container">
         <iframe
           id="gmap_canvas"

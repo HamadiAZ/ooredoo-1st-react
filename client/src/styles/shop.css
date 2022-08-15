@@ -86,3 +86,18 @@ iframe {
     align-self: right;
   }
 }
+
+
+.ali
+{
+
+font-size: 1rem;
+font-weight: 400;
+text-align: left;
+color: #333333;
+box-sizing: border-box;
+font-family: Nunito,sans-serif;
+align-items: center;
+display: flex;
+flex-basis: auto;
+}
