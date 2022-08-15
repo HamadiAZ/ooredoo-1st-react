@@ -5,7 +5,12 @@ import SideMenu from "../components/sideMenu";
 
 let headerImage = require("../images/header.jpg");
 
-export default function Header(): JSX.Element {
+export default function Header({
+  shoppingBasket,setShoppingBasket
+}: {
+  shoppingBasket:any;
+  setShoppingBasket:(arg:any)=>any;
+}): JSX.Element {
   const [isMenuShown, setisMenuShown] = useState(false);
 
   function HandleListClick(): void {

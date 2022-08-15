@@ -47,7 +47,7 @@ export type scheduleObjectType = {
   endM: number;
   index: number;
   fulltime: boolean;
-  currentOrNextOne:boolean;
+  currentOrNextOne: boolean;
 };
 
 export type fullScheduleGroupType = {
@@ -86,3 +86,22 @@ export type daysOfWeekType = {
   5: "fri";
   6: "sat";
 };
+
+export type singleProductObjectType = {
+  id: number;
+  name: string;
+  quantity: number;
+  type: "product";
+};
+export type subMenuObjectType = {
+  manufacture: string;
+  products: singleProductObjectType[];
+  type: "subMenu";
+};
+
+export type menuObjectType = {
+  signification: string;
+  subMenus: subMenuObjectType[];
+  type: "menu";
+};
+export type ProductsDataArrayType = menuObjectType[];

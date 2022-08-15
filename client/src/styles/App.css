@@ -236,6 +236,11 @@ footer {
   position: relative;
 }
 
+.buy{
+  font-size: 1rem;
+  background-color:rgb(2, 189, 2)
+}
+
 #prompt-root-container {
   position: absolute;
   margin: 0;

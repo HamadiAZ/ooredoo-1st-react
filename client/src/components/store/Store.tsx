@@ -9,17 +9,15 @@ import SearchBox from "../searchBox";
 import Gallery from "./gallery";
 //main
 
-export default function Store() {
+export default function Store({globalPath}: {globalPath: string}): JSX.Element {
   // vars & states
 
   const [shops, setShops] = useState<ShopObjectJSONType[]>([]);
 
   let store_id: number = parseInt(useParams().storeId || "");
-  const storePath = "http://localhost:5000/stores/" + store_id;
+  const storePath = globalPath + "/stores/" + store_id;
 
-  useEffect(() => {
-    getAllShops();
-  }, []);
+
 
   async function getAllShops() {
     try {
@@ -55,7 +53,7 @@ export default function Store() {
   }
 
   function handleItemClick(item: any) {
-    // item men lmap array  : from API
+    // item men l map array  : from API
     setSuggestionState(false);
     setInput({ address: item.label });
     setSelectedItem(item);
@@ -64,6 +62,10 @@ export default function Store() {
   function handleInputChange(event: React.ChangeEvent<HTMLInputElement>) {
     setInput({ address: event.target.value });
   }
+
+  useEffect(() => {
+    getAllShops();
+  }, []);
 
   return (
     <main onClick={() => setSuggestionState(false)}>

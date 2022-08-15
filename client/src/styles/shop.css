@@ -1,3 +1,6 @@
+html {
+  scroll-behavior: smooth;
+}
 .shop-div-schedule-root-container {
   display: grid;
   grid-template-rows: 1fr;
@@ -6,6 +9,97 @@
   max-width: 40rem;
   margin: 2rem auto;
   border: solid 1px black;
+}
+.shop-main-menu-container {
+  width: 100%;
+  display: flex;
+  margin: 3rem auto;
+  flex-wrap: wrap;
+  justify-content: center;
+  object-fit: contain;
+  gap: 3rem;
+}
+#shop-product-families-navigator-container {
+  border-bottom-left-radius: 4px;
+  border-bottom-right-radius: 4px;
+  border-top-right-radius: 15px;
+  border-top-left-radius: 15px;
+  padding: 1rem 3rem;
+  list-style-type: none;
+
+  margin: 0 1rem;
+  font-size: 1rem;
+  font-weight: 400;
+  text-align: center;
+  color: #333333;
+  box-sizing: border-box;
+  font-family: "Nunito", sans-serif;
+  align-items: center;
+  display: flex;
+  box-shadow: 4px 2px 4px rgba(0, 0, 0, 0.3);
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  width: fit-content
+  
+}
+#shop-product-families-navigator-container li {
+  padding: 0 1rem;
+  padding-bottom: 0.4rem;
+  font-size: 1.2rem;
+  
+}
+.li-button-and-name-container{
+  display: flex;
+  flex-direction: column;
+  font-size: 1.4rem;
+  justify-content: center;
+  align-items: center;
+}
+
+.li-not-selected {
+  border-bottom: solid 4px rgba(0, 0, 0, 0.1);
+  border-radius: 4px;
+}
+.li-not-selected:hover {
+  border-bottom: solid 4px rgba(0, 0, 0, 0.2);
+  border-radius: 4px;
+  font-weight: bold;
+}
+.li-selected {
+  border-bottom: solid 4px rgba(0, 0, 0, 0.7);
+  border-radius: 4px;
+  text-shadow: 4px 2px 8px rgba(253, 67, 67, 0.3);
+  font-weight: bold;
+}
+.li-selected:hover {
+  border-bottom: solid 4px rgba(0, 0, 0, 0.8);
+  border-radius: 4px;
+  text-shadow: 4px 2px 8px rgba(253, 67, 67, 0.3);
+  font-weight: bold;
+}
+
+.containers-of-li-items {
+  list-style: none;
+  width: 100%;
+  display: flex;
+  margin: 0 auto;
+  flex-wrap: wrap;
+  justify-content: center;
+  object-fit: contain;
+  gap: 3rem;
+}
+
+.list-items-final-class{
+  width: 10rem;
+  margin: 0 0rem;
+  padding: 1.5rem;
+  box-shadow: 2px 3px 8px rgba(20, 20, 20, 0.3);
+  border-radius: 8px;
+}
+.list-items-final-class img{
+  object-fit: contain;
+  width: 100%;
+  height: 7rem;
 }
 
 .shop-div-double-items-flex-container {
@@ -85,19 +179,4 @@ iframe {
     width: 25rem;
     align-self: right;
   }
-}
-
-
-.ali
-{
-
-font-size: 1rem;
-font-weight: 400;
-text-align: left;
-color: #333333;
-box-sizing: border-box;
-font-family: Nunito,sans-serif;
-align-items: center;
-display: flex;
-flex-basis: auto;
 }
