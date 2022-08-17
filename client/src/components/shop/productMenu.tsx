@@ -3,11 +3,7 @@ import { useState, useEffect, useMemo } from "react";
 import Menu from "./menu";
 
 import { products } from "../../const/const";
-import {
-  ProductsDataArrayType,
-  menuObjectType,
-  singleProductObjectType,
-} from "../../types/types";
+import { ProductsDataArrayType, menuObjectType, singleProductObjectType } from "../../types/types";
 
 export default function ProductMenu({
   handleAddToCard,
@@ -17,25 +13,19 @@ export default function ProductMenu({
   const [data, setData] = useState<ProductsDataArrayType>(products);
 
   const [selectedMenu, setSelectedMenu] = useState<string>("");
-  /*if menu is clicked : 
-  i5arrej liste des toutes les products and those whose are related to the click:  scroll by id
-  
-  else : i5arrej les categories lkbar 
-  */
 
-  function handleNavigatorClick(
-    event: React.MouseEvent<HTMLAnchorElement>,
-    item: menuObjectType
-  ) {
-    const foundIndex = data.findIndex(
-      (el) => el.signification === item.signification
-    );
-    let dataCpy = [...data];
-    const itemToAppend = data[foundIndex];
-    dataCpy.splice(foundIndex, 1);
-    dataCpy.unshift(itemToAppend);
-    setSelectedMenu(item.signification);
-    setData(dataCpy);
+  function handleNavigatorClick(item: menuObjectType) {
+    if (item.category === selectedMenu) {
+      setSelectedMenu(""); // to go back to categories view
+    } else {
+      const foundIndex = data.findIndex((el) => el.category === item.category);
+      let dataCpy = [...data];
+      const itemToAppend = data[foundIndex];
+      dataCpy.splice(foundIndex, 1);
+      dataCpy.unshift(itemToAppend);
+      setSelectedMenu(item.category);
+      setData(dataCpy);
+    }
   }
 
   useEffect(() => {
@@ -43,6 +33,7 @@ export default function ProductMenu({
   }, []);
 
   const InitialDataClone = useMemo(() => data, []);
+  // so it doesn't re Sort like the data array
 
   return (
     <>
@@ -50,33 +41,31 @@ export default function ProductMenu({
         {InitialDataClone.map((item: menuObjectType) => {
           return (
             <a
-              key={item.signification}
+              key={item.category}
               href="#shop-product-families-navigator-container"
-              onClick={(event) => handleNavigatorClick(event, item)}
+              onClick={() => handleNavigatorClick(item)}
             >
               <li
-                key={item.signification}
+                key={item.category}
                 className={
-                  selectedMenu && selectedMenu === item.signification
-                    ? "li-selected"
-                    : "li-not-selected"
+                  selectedMenu && selectedMenu === item.category ? "li-selected" : "li-not-selected"
                 }
               >
-                {item.signification}
+                {item.category}
               </li>
             </a>
           );
         })}
       </ul>
       <div className="shop-main-menu-container">
-        {selectedMenu ? (
-          <Menu MenusArray={data} handleAddToCard={handleAddToCard} />
-        ) : (
+        {
           <Menu
-            MenusArray={data /*a modifier*/}
+            MenusArray={data}
             handleAddToCard={handleAddToCard}
+            selectedMenu={selectedMenu}
+            handleNavigatorClick={handleNavigatorClick}
           />
-        )}
+        }
       </div>
     </>
   );

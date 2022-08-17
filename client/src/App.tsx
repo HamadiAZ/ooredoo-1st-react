@@ -1,6 +1,5 @@
 import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
-import { useState } from "react";
-
+import { useState, useEffect } from "react";
 
 import Home from "./components/home/Home";
 import ForgotPassword from "./components/forgotPassword";
@@ -10,26 +9,62 @@ import Footer from "./components/Footer";
 import AddShop from "./components/admin/addShop";
 import Admin from "./components/admin/admin";
 import Shop from "./components/shop/shop";
+import CheckOut from "./components/checkOut";
+
+import { basketProductType } from "./types/types";
 
 import "./styles/App.css";
 
 const globalPath = "http://localhost:5000";
 
 export default function App(): JSX.Element {
-  const [shoppingBasket, setShoppingBasket] = useState<any[]>([]);
+  // getting data from local storage
+  const [shoppingBasket, setShoppingBasket] = useState<basketProductType[]>(
+    () => {
+      const saved = localStorage.getItem("shoppingBasket") || "";
+      const initialValue = JSON.parse(saved);
+      return initialValue || [];
+    }
+  );
+
+  useEffect(() => {
+    localStorage.setItem("shoppingBasket", JSON.stringify(shoppingBasket));
+  }, [shoppingBasket]);
+
   return (
     <Router>
       <div className="App">
-        <Header shoppingBasket={shoppingBasket} setShoppingBasket={setShoppingBasket} />
+        <Header
+          shoppingBasket={shoppingBasket}
+          setShoppingBasket={setShoppingBasket}
+        />
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/forgotPassword" element={<ForgotPassword />} />
-          <Route path="/stores/:storeId" element={ <Store globalPath={globalPath}/> } />
+          <Route
+            path="/stores/:storeId"
+            element={<Store globalPath={globalPath} />}
+          />
           <Route
             path="/:storeId/shops/:shopId"
-            element={<Shop globalPath={globalPath} shoppingBasket={shoppingBasket} setShoppingBasket={setShoppingBasket} />}
+            element={
+              <Shop
+                globalPath={globalPath}
+                shoppingBasket={shoppingBasket}
+                setShoppingBasket={setShoppingBasket}
+              />
+            }
           />
-
+          <Route
+            path="/checkOut"
+            element={
+              <CheckOut
+                shoppingBasket={shoppingBasket}
+                setShoppingBasket={setShoppingBasket}
+                globalPath={globalPath}
+              />
+            }
+          ></Route>
           <Route
             path="/admin/addShop"
             element={<AddShop globalPath={globalPath} />}

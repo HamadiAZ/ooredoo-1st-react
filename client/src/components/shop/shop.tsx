@@ -9,11 +9,14 @@ import {
   ScheduleOfEveryDayType,
   scheduleObjectType,
   singleProductObjectType,
+  basketProductType,
+  daysOfWeekType,
 } from "../../types/types";
 import { daysOfWeek } from "../../const/const";
+import { products } from "../../const/const";
 
 import "../../styles/shop.css";
-import Item from "../home/item";
+
 const initialState = {
   mon: [],
   tue: [],
@@ -34,6 +37,13 @@ export default function Shop({
   setShoppingBasket: (arg: any) => any;
 }): JSX.Element {
   let { shopId } = useParams();
+
+  let upcomingTodaySessions: scheduleObjectType[] = [];
+
+  const [upcomingSessions, setUpcomingSessions] = useState<{
+    day: string;
+    schedule: scheduleObjectType[];
+  }>({ day: "", schedule: [] });
 
   const [shopData, setShopData] = useState<ShopObjectJSONType>({
     store_id: 9999,
@@ -64,7 +74,67 @@ export default function Shop({
     }
   }
 
-  function handleAddToCard(item: singleProductObjectType): void {}
+  function getProductInfo(productName: string): {
+    category: string;
+    manufacture: string;
+  } {
+    let category: string = "";
+    let manufacture: string = "";
+    for (const menu of products) {
+      category = menu.category;
+      for (const subMenu of menu.subMenus) {
+        manufacture = subMenu.manufacture;
+        for (const product of subMenu.products) {
+          if (product.name === productName)
+            return {
+              category: category,
+              manufacture: manufacture,
+            };
+        }
+      }
+    }
+    return {
+      category: "",
+      manufacture: "",
+    };
+  }
+
+  function handleAddToCard(item: singleProductObjectType): void {
+    const newItemInfo = getProductInfo(item.name);
+    const newItem: basketProductType = {
+      product_id: item.id,
+      name: item.name,
+      category: newItemInfo.category,
+      manufacture: newItemInfo.manufacture,
+      price: item.price,
+      quantity: 1,
+      quantityLeft: item.quantity,
+      shopUpcomingSessions: upcomingSessions,
+    };
+    setShoppingBasket((prev: basketProductType[]) => {
+      const arrayOfProductNames: string[] = prev.map(
+        (item: basketProductType) => item.name
+      );
+
+      if (arrayOfProductNames.includes(item.name)) {
+        //if it exist : add quantity +1
+        const copyOfArray = [...prev];
+        const indexOfObjectToModifyQuantity = copyOfArray.findIndex(
+          (object) => {
+            return object.product_id === item.id;
+          }
+        );
+        copyOfArray[indexOfObjectToModifyQuantity] = {
+          ...copyOfArray[indexOfObjectToModifyQuantity],
+          quantity: copyOfArray[indexOfObjectToModifyQuantity].quantity + 1,
+        };
+        return [...copyOfArray];
+      } else {
+        // add it with 1 quantity
+        return [...prev, newItem];
+      }
+    });
+  }
   const address = shopData ? shopData.address.address : 0;
   const long = shopData ? shopData.address.long : 0;
   const lat = shopData ? shopData.address.lat : 0;
@@ -164,13 +234,30 @@ export default function Shop({
       ];
     if (isShopOpenNow()) {
       //green background somewhere
+      //console.log("cuurent", currentDaySchedule);
+
+      let index = -1;
+      let startingIndex = 0;
       currentDaySchedule.forEach((item) => {
+        index++;
         if (checkIfItsCurrentScheduleActiveTime(item)) {
+          startingIndex = index;
           item.currentOrNextOne = true;
         } else {
           item.currentOrNextOne = false;
         }
       });
+      let tempUpcomingSchedule = [];
+      for (let i = startingIndex; i < currentDaySchedule.length; i++) {
+        tempUpcomingSchedule.push(currentDaySchedule[i]);
+      }
+
+      setUpcomingSessions({
+        // for checkout Page
+        day: "today",
+        schedule: [...tempUpcomingSchedule],
+      });
+      console.log("im heeere");
     } else {
       // shop is closed now // blue background somewhere
       let dayIndex = d.getDay();
@@ -188,19 +275,54 @@ export default function Shop({
           if (counter === 0) {
             // current day
             // find the next session
+
+            let previousSessionsOfTodayCounter = -1; // for setUpcomingSessions
+            // for adding to basket
+
             for (let singleSession of scheduleOfDay) {
               if (checkIfItWillOpenInThisSessionOfToday(singleSession)) {
                 dayFound = true;
-                // console.log(singleSession)
                 const singleSessionCopy = { ...singleSession };
                 arrayOfUpcomingSessionsOfaDay.push(singleSessionCopy);
+              } else previousSessionsOfTodayCounter++; // for setUpcomingSessions
+            }
+
+            // previousSessionsOfTodayCounter: count how many session already gone today
+            // so we dont give them as an option when ordering
+            let index = 0;
+            // index : will ignore the first sessions
+            let nextSchedulesOfToday: scheduleObjectType[] = [];
+            if (dayFound) {
+              for (let singleSession of scheduleOfDay) {
+                if (index > previousSessionsOfTodayCounter) {
+                  //add the upcoming sessions only
+                  //if time now 10 and there is session 8-9 of today
+                  //dont add it
+                  nextSchedulesOfToday.push(singleSession);
+                }
+                index++;
               }
+
+              setUpcomingSessions({
+                day: "today",
+                schedule: [...nextSchedulesOfToday],
+              });
+            } else {
+              setUpcomingSessions({
+                day: "today",
+                schedule: [...currentDaySchedule],
+              });
             }
           } else {
             //upcoming days
             //find the first session of the next DAY THAT THE SHOP IS OPENED AT
+
             for (let singleSession of scheduleOfDay) {
               if (singleSession) {
+                setUpcomingSessions({
+                  day: day,
+                  schedule: [...currentDaySchedule],
+                });
                 dayFound = true;
                 const daySessionCopy = [...scheduleOfDay];
                 arrayOfUpcomingSessionsOfaDay.push(...daySessionCopy);
@@ -220,94 +342,111 @@ export default function Shop({
           (item) => item.startH
         );
         orderTempArray.sort();
+        upcomingTodaySessions = orderTempArray.map(
+          (item) =>
+            arrayOfUpcomingSessionsOfaDay[
+              arrayOfUpcomingSessionsOfaDay.findIndex((x) => x.startH === item)
+            ]
+        );
+
+        //if (returnUpcomingScheduleArrayInsted) return upcomingTodaySessions;
         let nextStartH = orderTempArray[0];
-        let scheduleToChange = getScheduleToChange(dayIndex, nextStartH);
+        let scheduleToChange = getScheduleToChange(
+          dayIndex,
+          nextStartH,
+          daysOfWeek,
+          ScheduleOfEveryDayConst
+        );
         scheduleToChange.currentOrNextOne = true;
       }
     }
 
-    function getScheduleToChange(
-      dayIndex: number,
-      nextStartH: number
-    ): scheduleObjectType {
-      let day = daysOfWeek[dayIndex as keyof typeof daysOfWeek]; //
-      let scheduleOfDay =
-        ScheduleOfEveryDayConst[day as keyof typeof ScheduleOfEveryDayConst];
-
-      let found = scheduleOfDay.filter(
-        (item: scheduleObjectType) => item.startH === nextStartH
-      );
-      // array of single item
-      return found[0];
-    }
-
-    function checkIfItWillOpenInThisSessionOfToday(
-      singleSession: any
-    ): boolean {
-      const hoursNow = d.getHours();
-      const minutesNow = d.getMinutes();
-      if (hoursNow < singleSession.endH) return true;
-      if (hoursNow === singleSession.endH && minutesNow <= singleSession.endM)
-        return true;
-      return false;
-    }
-
-    function checkIfItsCurrentScheduleActiveTime(singleSession: any): boolean {
-      const hoursNow = d.getHours();
-      const minutesNow = d.getMinutes();
-      if (singleSession.startH < hoursNow && hoursNow < singleSession.endH)
-        return true;
-      if (
-        // time is 9:10 // session 9:20 =>9:30
-        singleSession.startH === hoursNow &&
-        hoursNow < singleSession.endH &&
-        singleSession.startM > minutesNow
-      )
-        return false;
-      if (
-        // time is 9:10 // session 8:20 =>9:30
-        singleSession.startH < hoursNow &&
-        hoursNow == singleSession.endH &&
-        singleSession.endM > minutesNow
-      )
-        return true;
-      if (
-        // time is 8:30 // session 8:20 =>9:30
-        singleSession.startH == hoursNow &&
-        hoursNow < singleSession.endH &&
-        singleSession.startM < minutesNow
-      )
-        return true;
-      if (
-        // time 15:45 // session 15:10=>15:40
-        singleSession.startH <= hoursNow &&
-        hoursNow === singleSession.endH &&
-        singleSession.endM < minutesNow
-      )
-        return false;
-      if (
-        // time 15:45 // session 15:10=>15:40
-        singleSession.startH === hoursNow &&
-        hoursNow === singleSession.endH &&
-        singleSession.endM > minutesNow &&
-        singleSession.startM < minutesNow
-      )
-        return true;
-      return false;
-    }
-
     return ScheduleOfEveryDayConst;
+  }
+
+  function getScheduleToChange(
+    dayIndex: number,
+    nextStartH: number,
+    daysOfWeek: daysOfWeekType,
+    ScheduleOfEveryDayConst: ScheduleOfEveryDayType
+  ): scheduleObjectType {
+    let day = daysOfWeek[dayIndex as keyof typeof daysOfWeek]; //
+    let scheduleOfDay =
+      ScheduleOfEveryDayConst[day as keyof typeof ScheduleOfEveryDayConst];
+
+    let found = scheduleOfDay.filter(
+      (item: scheduleObjectType) => item.startH === nextStartH
+    );
+    // array of single item
+    return found[0];
+  }
+
+  function checkIfItWillOpenInThisSessionOfToday(singleSession: any): boolean {
+    const hoursNow = d.getHours();
+    const minutesNow = d.getMinutes();
+    if (hoursNow < singleSession.endH) return true;
+    if (hoursNow === singleSession.endH && minutesNow <= singleSession.endM)
+      return true;
+    return false;
+  }
+
+  function checkIfItsCurrentScheduleActiveTime(singleSession: any): boolean {
+    const hoursNow = d.getHours();
+    const minutesNow = d.getMinutes();
+    if (singleSession.startH < hoursNow && hoursNow < singleSession.endH)
+      return true;
+    if (
+      // time is 9:10 // session 9:20 =>9:30
+      singleSession.startH === hoursNow &&
+      hoursNow < singleSession.endH &&
+      singleSession.startM > minutesNow
+    )
+      return false;
+    if (
+      // time is 9:10 // session 8:20 =>9:30
+      singleSession.startH < hoursNow &&
+      hoursNow == singleSession.endH &&
+      singleSession.endM > minutesNow
+    )
+      return true;
+    if (
+      // time is 8:30 // session 8:20 =>9:30
+      singleSession.startH == hoursNow &&
+      hoursNow < singleSession.endH &&
+      singleSession.startM < minutesNow
+    )
+      return true;
+    if (
+      // time 15:45 // session 15:10=>15:40
+      singleSession.startH <= hoursNow &&
+      hoursNow === singleSession.endH &&
+      singleSession.endM < minutesNow
+    )
+      return false;
+    if (
+      // time 15:45 // session 15:10=>15:40
+      singleSession.startH === hoursNow &&
+      hoursNow === singleSession.endH &&
+      singleSession.endM > minutesNow &&
+      singleSession.startM < minutesNow
+    )
+      return true;
+    return false;
   }
 
   useEffect(() => {
     getShopData();
   }, []);
 
+  //console.log(shoppingBasket);
+
   const scheduleOfEveryDay = useMemo(() => getScheduleOfShop(), [shopData]);
 
   let styleSpanOfCurrentSchedule = isShopOpenNow()
-    ? { backgroundColor: "green" }
-    : { backgroundColor: "blue" };
+    ? { backgroundColor: "#42c966", color: "white" }
+    : { backgroundColor: "#424dc9", color: "white" };
+
+  console.log("upcoming", upcomingSessions);
   return (
     <div>
       <h1>welcome to ooredoo {name} shop</h1>

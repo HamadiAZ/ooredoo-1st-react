@@ -11,13 +11,118 @@ header {
   background-color: white;
   box-shadow: 2px 2px 7px rgba(0, 0, 0, 0.3);
 }
+#header-card-and-menu-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 1rem;
+}
+#shopping-card-absolute-div {
+  width: 2rem;
+  height: 3rem;
+  padding: 0;
+  position: relative;
+}
+#shopping-card-counter {
+  margin: 0;
+  padding: 0.2rem;
+  position: absolute;
+  top: 1.7rem;
+  left: 1.4rem;
+  background-color: #333333;
+  color: white;
+  border-radius: 0.6rem;
+  width: 1rem;
+  height: 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+#basket-root-container {
+  position: absolute;
+  background-color: rgb(255, 255, 255);
+  box-shadow: 3px 3px 15px rgba(0, 0, 0, 0.5);
+  width: fit-content;
+  min-width: 24rem;
+  min-height: 20rem;
+  top: 2.4rem;
+  right: 0rem;
+  z-index: 800;
+  border-radius: 14px;
+}
+
+#basket-table-container {
+  width: 100%;
+  min-height: 10rem;
+}
+#basket-table-container h1 {
+  font-size: 4vmin;
+}
+
+.two-items-flex-space-between {
+  display: flex;
+  justify-content: space-between;
+}
+.two-items-flex-space-between p {
+  margin: 1rem 1.2rem 0.2rem;
+  font-size: 1.2rem;
+  font-weight: bold;
+}
+#basket-root-container table {
+  width: 100%;
+}
+#basket-root-container #buttons-container {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.8rem;
+  padding: 0.2rem 1rem;
+  margin-left: auto;
+  margin-right: 0;
+}
+#basket-root-container .btn {
+  margin: 1rem 0;
+}
+#basket-root-container input {
+  width: 2.5rem;
+  height: 1.2em;
+  padding: 0.2rem;
+  font-size: 0.9rem;
+}
+
+.basket-delete-icon {
+  width: 1.2rem;
+  height: 1.2rem;
+}
 
 #BsList {
   width: 2rem;
   height: 3rem;
   padding: 0;
 }
-
+#checkout-main-root-container {
+  width: fit-content;
+  min-width: 30rem;
+  min-height: 15rem;
+  margin: auto auto;
+}
+#checkout-main-root-container table {
+  margin: 2rem;
+  width: 100%;
+}
+#checkout-main-root-container td {
+  padding: 0.4rem;
+}
+#checkout-main-root-container input {
+  width: 3rem;
+  padding: 0.2rem;
+  font-weight: bold;
+}
+#checkout-main-root-container select {
+  width: 8rem;
+  padding: 0.2rem;
+  font-weight: bold;
+}
 #side-menu {
   position: fixed;
   top: 0;
@@ -236,9 +341,9 @@ footer {
   position: relative;
 }
 
-.buy{
+.buy {
   font-size: 1rem;
-  background-color:rgb(2, 189, 2)
+  background-color: rgb(2, 189, 2);
 }
 
 #prompt-root-container {

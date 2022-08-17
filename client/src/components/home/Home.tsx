@@ -10,7 +10,6 @@ export default function Home(): JSX.Element {
     try {
       const response = await fetch("http://localhost:5000/api/getStores");
       let data: StoreObjectJSONType[] = await response.json();
-      console.log(data);
       setStores(data);
     } catch (error: any) {
       console.error(error.message);

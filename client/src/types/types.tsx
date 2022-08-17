@@ -40,6 +40,12 @@ export type ShopObjectJSONType = {
   schedule: fullScheduleGroupType[];
 };
 
+export type scheduleCheckoutObjectType = {
+  day: string;
+  hours: number;
+  minutes: number;
+};
+
 export type scheduleObjectType = {
   startH: number;
   startM: number;
@@ -92,6 +98,7 @@ export type singleProductObjectType = {
   name: string;
   quantity: number;
   type: "product";
+  price: number;
 };
 export type subMenuObjectType = {
   manufacture: string;
@@ -100,8 +107,22 @@ export type subMenuObjectType = {
 };
 
 export type menuObjectType = {
-  signification: string;
+  category: string;
   subMenus: subMenuObjectType[];
   type: "menu";
 };
 export type ProductsDataArrayType = menuObjectType[];
+
+export type basketProductType = {
+  product_id: number;
+  name: string;
+  category: string;
+  manufacture: string;
+  price: number;
+  quantity: number;
+  quantityLeft: number;
+  shopUpcomingSessions: {
+    day: string;
+    schedule: scheduleObjectType[];
+  };
+};

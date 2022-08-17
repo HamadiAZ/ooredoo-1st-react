@@ -10,6 +10,7 @@ html {
   margin: 2rem auto;
   border: solid 1px black;
 }
+
 .shop-main-menu-container {
   width: 100%;
   display: flex;
@@ -27,7 +28,7 @@ html {
   padding: 1rem 3rem;
   list-style-type: none;
 
-  margin: 0 1rem;
+  margin: 0 auto;
   font-size: 1rem;
   font-weight: 400;
   text-align: center;
@@ -39,16 +40,14 @@ html {
   box-shadow: 4px 2px 4px rgba(0, 0, 0, 0.3);
   flex-wrap: nowrap;
   overflow-x: auto;
-  width: fit-content
-  
+  width: 90vw;
 }
 #shop-product-families-navigator-container li {
   padding: 0 1rem;
   padding-bottom: 0.4rem;
   font-size: 1.2rem;
-  
 }
-.li-button-and-name-container{
+.li-button-and-name-container {
   display: flex;
   flex-direction: column;
   font-size: 1.4rem;
@@ -89,14 +88,14 @@ html {
   gap: 3rem;
 }
 
-.list-items-final-class{
+.list-items-final-class {
   width: 10rem;
   margin: 0 0rem;
   padding: 1.5rem;
   box-shadow: 2px 3px 8px rgba(20, 20, 20, 0.3);
   border-radius: 8px;
 }
-.list-items-final-class img{
+.list-items-final-class img {
   object-fit: contain;
   width: 100%;
   height: 7rem;
