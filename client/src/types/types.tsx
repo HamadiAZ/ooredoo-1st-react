@@ -121,8 +121,21 @@ export type basketProductType = {
   price: number;
   quantity: number;
   quantityLeft: number;
+  shopId: number;
   shopUpcomingSessions: {
     day: string;
     schedule: scheduleObjectType[];
   };
 };
+
+export type SelectorType = {
+  inputTimeSelector: string;
+  inputMdpSelector: string;
+  inputMdvSelector: string;
+};
+
+export enum Selector {
+  time = "inputTimeSelector",
+  mdp = "inputMdpSelector",
+  mdv = "inputMdvSelector",
+}
