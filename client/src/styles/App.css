@@ -90,11 +90,31 @@ header {
   font-size: 0.9rem;
 }
 
+#checkout-delivery-address-input {
+  width: 100% !important;
+  height: 1.6em !important;
+  padding: 0.2rem !important;
+  font-size: 0.9rem !important;
+  border-radius: 2px;
+}
+#checkout-delivery-address-input:focus {
+  font-size: 1.1rem !important;
+  border-radius: 2px;
+  border: solid 3px #333333;
+}
+
 .basket-delete-icon {
   width: 1.2rem;
   height: 1.2rem;
 }
-
+.link {
+  font-size: 1.1rem;
+  font-weight: bold;
+}
+.link:hover {
+  cursor: pointer;
+  text-shadow: 0 0 2px rgba(0, 0, 0, 0.3);
+}
 #BsList {
   width: 2rem;
   height: 3rem;

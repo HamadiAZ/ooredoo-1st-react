@@ -1,5 +1,9 @@
-import React, { useState, useReducer } from "react";
+import { readdir } from "fs";
+import React, { useState, useReducer, useEffect } from "react";
 import { MdDelete } from "react-icons/md";
+import { Link, useNavigate } from "react-router-dom";
+
+import { ShopDataInit } from "../const/const";
 
 import {
   SelectorType,
@@ -7,18 +11,18 @@ import {
   scheduleObjectType,
   scheduleCheckoutObjectType,
   Selector,
+  ShopObjectJSONType,
 } from "../types/types";
 
 const userName = "hammadi azaiez";
-const mdpChosen = "cash";
-const mdvChosen = "surplace";
-const deliverTimeChosen = "10:10";
-const addressChosen = "";
+let shopId: number;
+let startCountingToRedirect: boolean = false;
 
 const initialState: SelectorType = {
   inputTimeSelector: "10:10",
   inputMdpSelector: "cash",
   inputMdvSelector: "surplace",
+  inputAddrSelector: "",
 };
 
 export default function CheckOut({
@@ -32,11 +36,21 @@ export default function CheckOut({
 }) {
   const basketCounter = shoppingBasket?.length || 0;
 
+  const [counter, setCounter] = useState<number>(10);
   const [orderStatus, setOrderStatus] = useState<string>("not-ordered");
+  const [shopData, setShopData] = useState<ShopObjectJSONType>(ShopDataInit);
+  const [state, dispatch] = useReducer(reducer, initialState);
 
-  const [inputTimeSelector, setInputTimeSelector] = useState<string>("10:10");
-
-  //onClick={() => dispatch({type: 'decrement'})}
+  async function getShopData(shopId: number): Promise<void> {
+    try {
+      let res = await fetch(globalPath + "/api/getShopData/" + shopId);
+      let data: any = await res.json();
+      data = data[0];
+      setShopData(data);
+    } catch (error) {
+      console.error(error);
+    }
+  }
 
   function reducer(state: SelectorType, action: any): SelectorType {
     switch (action.type) {
@@ -46,11 +60,12 @@ export default function CheckOut({
         return { ...state, inputMdpSelector: action.payload };
       case Selector.mdv:
         return { ...state, inputMdvSelector: action.payload };
+      case Selector.addr:
+        return { ...state, inputAddrSelector: action.payload };
       default:
         return state;
     }
   }
-  const [state, dispatch] = useReducer(reducer, initialState);
 
   function handleDeleteItem(item: basketProductType): void {
     setShoppingBasket((prev: basketProductType[]) => {
@@ -62,13 +77,13 @@ export default function CheckOut({
 
   async function handleOrder(): Promise<void> {
     const dataBody = {
-      shopId: 1,
+      shopId: shoppingBasket[0].shopId,
       userId: 1,
       userName: userName,
-      mdp: mdpChosen,
-      mdv: mdvChosen,
-      deliveryTime: deliverTimeChosen,
-      deliveryAddr: addressChosen,
+      mdp: state.inputMdpSelector,
+      mdv: state.inputMdvSelector,
+      deliveryTime: state.inputTimeSelector,
+      deliveryAddr: state.inputAddrSelector,
       content: shoppingBasket.map((item) => {
         let copy: any = { ...item };
         delete copy.shopUpcomingSessions;
@@ -88,7 +103,7 @@ export default function CheckOut({
       });
       const reply = await res.json();
       //console.log(reply);
-
+      startCountingToRedirect = true;
       setOrderStatus(`order id : ${reply[0].order_id} has been confirmed , delivery time : ${reply[0].delivery_time}
       order full date: ${reply[0].created_at}`);
       setShoppingBasket([]);
@@ -110,6 +125,10 @@ export default function CheckOut({
       }
       return newArray;
     });
+  }
+
+  function handleAddressInput(event: React.ChangeEvent<HTMLInputElement>): void {
+    dispatch({ type: Selector.addr, payload: event.target.value });
   }
 
   function handleInputTimeSelector(event: React.ChangeEvent<HTMLSelectElement>): void {
@@ -295,6 +314,26 @@ export default function CheckOut({
     return arrayOf15Minutes;
   }
 
+  useEffect(() => {
+    if (shoppingBasket.length) getShopData(shoppingBasket[0].shopId);
+  }, []);
+
+  const navigate = useNavigate();
+  useEffect(() => {
+    let interval: any;
+    if (startCountingToRedirect) {
+      interval = setInterval(() => {
+        if (counter < 1) {
+          console.log("readdir");
+          navigate(-1);
+        }
+
+        setCounter((seconds: number) => seconds - 1);
+      }, 1000);
+    }
+    return () => clearInterval(interval);
+  }, [startCountingToRedirect, counter]);
+
   return (
     <main id="checkout-main-root-container">
       {basketCounter > 0 ? (
@@ -303,7 +342,7 @@ export default function CheckOut({
             <tr style={{ fontWeight: "bold" }}>
               <td>name</td>
               <td>category</td>
-              <td>marque</td>
+              <td style={{ width: "8rem" }}>marque</td>
               <td>quantity</td>
               <td>price</td>
               <td>total</td>
@@ -391,11 +430,19 @@ export default function CheckOut({
               <td></td>
               <td></td>
               <td>
-                <p>select picking method :</p>
+                <p>select payment method :</p>
               </td>
               <td>
-                <select name="select" value={state[Selector.mdv]} onChange={handleInputMdvSelector}>
-                  {}
+                <select name="select" value={state[Selector.mdp]} onChange={handleInputMdpSelector}>
+                  {Object.keys(shopData.mdp).map((item: string) => {
+                    if (shopData.mdp[item as keyof typeof shopData.mdp] === true) {
+                      return (
+                        <option key={item} value={item}>
+                          {item}
+                        </option>
+                      );
+                    }
+                  })}
                 </select>
               </td>
             </tr>
@@ -405,14 +452,41 @@ export default function CheckOut({
               <td></td>
               <td></td>
               <td>
-                <p>select payment method :</p>
+                <p>select picking method :</p>
               </td>
               <td>
-                <select name="select" value={state[Selector.mdp]} onChange={handleInputMdpSelector}>
-                  {}
+                <select name="select" value={state[Selector.mdv]} onChange={handleInputMdvSelector}>
+                  {Object.keys(shopData.mdv).map((item: string) => {
+                    if (shopData.mdv[item as keyof typeof shopData.mdv] === true) {
+                      return (
+                        <option key={item} value={item}>
+                          {item}
+                        </option>
+                      );
+                    }
+                  })}
                 </select>
               </td>
             </tr>
+            {state.inputMdvSelector == "delivery" && (
+              <tr style={{ fontWeight: "bold" }}>
+                <td></td>
+                <td></td>
+                <td>
+                  <p>write your address :</p>
+                </td>
+                <td colSpan={3}>
+                  <input
+                    id="checkout-delivery-address-input"
+                    name="input"
+                    value={state[Selector.addr]}
+                    onChange={handleAddressInput}
+                  ></input>
+                </td>
+                <td></td>
+              </tr>
+            )}
+
             <tr>
               <td></td>
               <td></td>
@@ -433,7 +507,22 @@ export default function CheckOut({
           </tfoot>
         </table>
       ) : (
-        <>{orderStatus === "not-ordered" ? <h1>empty card</h1> : <h3>{orderStatus}</h3>}</>
+        <>
+          {orderStatus === "not-ordered" ? (
+            <h1>empty card</h1>
+          ) : (
+            <div>
+              <h3>{orderStatus}</h3>
+              <p onClick={() => navigate(-1)} className="link">
+                you will go back to shop in {counter}
+              </p>
+
+              <p onClick={() => navigate(-1)} className="link">
+                Or Click Here!
+              </p>
+            </div>
+          )}
+        </>
       )}
     </main>
   );

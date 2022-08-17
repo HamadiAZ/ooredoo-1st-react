@@ -45,6 +45,15 @@ app.post("/api/admin/addShop", async (req, res) => {
 
 app.get("/api/admin/getMapPage", async (req, res) => {});
 
+app.get("/api/admin/getOrders", async (req, res) => {
+  try {
+    data = await pool.query("select * from orders");
+    res.json(data.rows);
+  } catch (error) {
+    console.error(error.message);
+  }
+});
+
 //  stores api       /////////////////////////////////////////////////////////
 app.get("/api/getStores", async (req, res) => {
   try {
@@ -78,9 +87,7 @@ app.get("/api/getShops/:id_store", async (req, res) => {
 
 app.get("/api/getShopData/:id_shop", async (req, res) => {
   try {
-    data = await pool.query(
-      `select * from shops where "id"='${req.params.id_shop}'`
-    );
+    data = await pool.query(`select * from shops where "id"='${req.params.id_shop}'`);
     res.json(data.rows);
   } catch (error) {
     console.error(error.message);
@@ -102,9 +109,7 @@ app.post("/api/order/newOrder", async (req, res) => {
       '${data.mdv}',
       '${data.deliveryAddr}',
       '${data.deliveryTime}',
-      '${JSON.stringify(
-        data.content
-      )}') RETURNING order_id,created_at ,delivery_time;
+      '${JSON.stringify(data.content)}') RETURNING order_id,created_at ,delivery_time;
     `);
 
     res.send(newOrder.rows);

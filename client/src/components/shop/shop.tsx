@@ -12,10 +12,10 @@ import {
   basketProductType,
   daysOfWeekType,
 } from "../../types/types";
-import { daysOfWeek } from "../../const/const";
-import { products } from "../../const/const";
+import { daysOfWeek, ShopDataInit, products } from "../../const/const";
 
 import "../../styles/shop.css";
+import PaymentMethods from "./paymentMethods";
 
 const initialState = {
   mon: [],
@@ -45,23 +45,7 @@ export default function Shop({
     schedule: scheduleObjectType[];
   }>({ day: "", schedule: [] });
 
-  const [shopData, setShopData] = useState<ShopObjectJSONType>({
-    store_id: 9999,
-    name: "empty",
-    address: { address: "a", lat: 1, long: 1 },
-    mdv: {
-      surplace: false,
-      delivery: false,
-      export: false,
-    },
-    mdp: {
-      cash: false,
-      check: false,
-      voucher: false,
-      cc: false,
-    },
-    schedule: [],
-  });
+  const [shopData, setShopData] = useState<ShopObjectJSONType>(ShopDataInit);
 
   async function getShopData(): Promise<void> {
     try {
@@ -100,6 +84,7 @@ export default function Shop({
   }
 
   function handleAddToCard(item: singleProductObjectType): void {
+    console.log("contains others:", checkIfBasketConainElementFromOtherShops());
     const newItemInfo = getProductInfo(item.name);
     const newItem: basketProductType = {
       product_id: item.id,
@@ -112,26 +97,41 @@ export default function Shop({
       shopId: parseInt(shopId || "0"),
       shopUpcomingSessions: upcomingSessions,
     };
-    setShoppingBasket((prev: basketProductType[]) => {
-      const arrayOfProductNames: string[] = prev.map((item: basketProductType) => item.name);
+    if (!checkIfBasketConainElementFromOtherShops()) {
+      setShoppingBasket((prev: basketProductType[]) => {
+        const arrayOfProductNames: string[] = prev.map((item: basketProductType) => item.name);
 
-      if (arrayOfProductNames.includes(item.name)) {
-        //if it exist : add quantity +1
-        const copyOfArray = [...prev];
-        const indexOfObjectToModifyQuantity = copyOfArray.findIndex((object) => {
-          return object.product_id === item.id;
-        });
-        copyOfArray[indexOfObjectToModifyQuantity] = {
-          ...copyOfArray[indexOfObjectToModifyQuantity],
-          quantity: copyOfArray[indexOfObjectToModifyQuantity].quantity + 1,
-        };
-        return [...copyOfArray];
-      } else {
-        // add it with 1 quantity
-        return [...prev, newItem];
-      }
-    });
+        if (arrayOfProductNames.includes(item.name)) {
+          //if it exist : add quantity +1
+          const copyOfArray = [...prev];
+          const indexOfObjectToModifyQuantity = copyOfArray.findIndex((object) => {
+            return object.product_id === item.id;
+          });
+          copyOfArray[indexOfObjectToModifyQuantity] = {
+            ...copyOfArray[indexOfObjectToModifyQuantity],
+            quantity: copyOfArray[indexOfObjectToModifyQuantity].quantity + 1,
+          };
+          return [...copyOfArray];
+        } else {
+          // add it with 1 quantity
+          return [...prev, newItem];
+        }
+      });
+    } else {
+      // basket contains elements from other shops
+      alert(
+        "you cant add items from different shops, complete your order first or delete items in the basket"
+      );
+    }
   }
+  console.log(shopId, "basketshop:", shoppingBasket[0].shopId);
+  function checkIfBasketConainElementFromOtherShops(): boolean {
+    if (!shoppingBasket.length) return false; // basket empty
+    if (shoppingBasket[0].shopId !== parseInt(shopId || shoppingBasket[0].shopId)) return true;
+    //shopId || shoppingBasket[0].shopId so if the first one is undefined dont block the code
+    return false;
+  }
+
   const address = shopData ? shopData.address.address : 0;
   const long = shopData ? shopData.address.long : 0;
   const lat = shopData ? shopData.address.lat : 0;
@@ -246,7 +246,6 @@ export default function Shop({
         day: "today",
         schedule: [...tempUpcomingSchedule],
       });
-      console.log("im heeere");
     } else {
       // shop is closed now // blue background somewhere
       let dayIndex = d.getDay();
@@ -419,15 +418,12 @@ export default function Shop({
     getShopData();
   }, []);
 
-  //console.log(shoppingBasket);
-
   const scheduleOfEveryDay = useMemo(() => getScheduleOfShop(), [shopData]);
 
   let styleSpanOfCurrentSchedule = isShopOpenNow()
     ? { backgroundColor: "#42c966", color: "white" }
     : { backgroundColor: "#424dc9", color: "white" };
 
-  console.log("upcoming", upcomingSessions);
   return (
     <div>
       <h1>welcome to ooredoo {name} shop</h1>
@@ -443,7 +439,7 @@ export default function Shop({
         scheduleOfEveryDay={scheduleOfEveryDay}
         styleSpanOfCurrentSchedule={styleSpanOfCurrentSchedule}
       />
-
+      <PaymentMethods shopData={shopData} />
       <ProductMenu handleAddToCard={handleAddToCard} />
       <div className="shop-div-double-items-flex-container">
         {/*<iframe

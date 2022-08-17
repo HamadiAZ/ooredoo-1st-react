@@ -132,10 +132,12 @@ export type SelectorType = {
   inputTimeSelector: string;
   inputMdpSelector: string;
   inputMdvSelector: string;
+  inputAddrSelector: string;
 };
 
 export enum Selector {
   time = "inputTimeSelector",
   mdp = "inputMdpSelector",
   mdv = "inputMdvSelector",
+  addr = "inputAddrSelector",
 }
