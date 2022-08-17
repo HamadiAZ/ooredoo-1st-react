@@ -109,21 +109,18 @@ export default function Shop({
       price: item.price,
       quantity: 1,
       quantityLeft: item.quantity,
+      shopId: parseInt(shopId || "0"),
       shopUpcomingSessions: upcomingSessions,
     };
     setShoppingBasket((prev: basketProductType[]) => {
-      const arrayOfProductNames: string[] = prev.map(
-        (item: basketProductType) => item.name
-      );
+      const arrayOfProductNames: string[] = prev.map((item: basketProductType) => item.name);
 
       if (arrayOfProductNames.includes(item.name)) {
         //if it exist : add quantity +1
         const copyOfArray = [...prev];
-        const indexOfObjectToModifyQuantity = copyOfArray.findIndex(
-          (object) => {
-            return object.product_id === item.id;
-          }
-        );
+        const indexOfObjectToModifyQuantity = copyOfArray.findIndex((object) => {
+          return object.product_id === item.id;
+        });
         copyOfArray[indexOfObjectToModifyQuantity] = {
           ...copyOfArray[indexOfObjectToModifyQuantity],
           quantity: copyOfArray[indexOfObjectToModifyQuantity].quantity + 1,
@@ -156,11 +153,7 @@ export default function Shop({
       for (let group of schedule) {
         if ((group.days as any)[currentDay]) {
           for (let singleSession of group.schedule) {
-            if (
-              singleSession.startH < hoursNow &&
-              hoursNow < singleSession.endH
-            )
-              return true;
+            if (singleSession.startH < hoursNow && hoursNow < singleSession.endH) return true;
             if (
               // time is 9:10 // session 9:20 =>9:30
               singleSession.startH === hoursNow &&
@@ -210,9 +203,7 @@ export default function Shop({
     const { schedule } = shopData;
     for (let i = 0; i < 7; i++) {
       for (let group of schedule) {
-        let dayOfWeek = daysOfWeek[
-          i as keyof typeof daysOfWeek
-        ] as keyof typeof group.days;
+        let dayOfWeek = daysOfWeek[i as keyof typeof daysOfWeek] as keyof typeof group.days;
 
         if (group.days[dayOfWeek]) {
           let day = daysOfWeek[
@@ -229,9 +220,7 @@ export default function Shop({
     const currentDay: string = getCurrenDayAsString();
 
     let currentDaySchedule =
-      ScheduleOfEveryDayConst[
-        currentDay as keyof typeof ScheduleOfEveryDayConst
-      ];
+      ScheduleOfEveryDayConst[currentDay as keyof typeof ScheduleOfEveryDayConst];
     if (isShopOpenNow()) {
       //green background somewhere
       //console.log("cuurent", currentDaySchedule);
@@ -266,8 +255,7 @@ export default function Shop({
         let day = daysOfWeek[dayIndex as keyof typeof daysOfWeek]; // current day
         //day index is actual day index corresponding to day position in the week;
         // counter just to ensure a full week loop
-        let scheduleOfDay =
-          ScheduleOfEveryDayConst[day as keyof typeof ScheduleOfEveryDayConst];
+        let scheduleOfDay = ScheduleOfEveryDayConst[day as keyof typeof ScheduleOfEveryDayConst];
         let dayFound = false;
 
         if (scheduleOfDay.length) {
@@ -338,9 +326,7 @@ export default function Shop({
 
       let orderTempArray = [];
       if (arrayOfUpcomingSessionsOfaDay.length) {
-        orderTempArray = arrayOfUpcomingSessionsOfaDay.map(
-          (item) => item.startH
-        );
+        orderTempArray = arrayOfUpcomingSessionsOfaDay.map((item) => item.startH);
         orderTempArray.sort();
         upcomingTodaySessions = orderTempArray.map(
           (item) =>
@@ -371,12 +357,9 @@ export default function Shop({
     ScheduleOfEveryDayConst: ScheduleOfEveryDayType
   ): scheduleObjectType {
     let day = daysOfWeek[dayIndex as keyof typeof daysOfWeek]; //
-    let scheduleOfDay =
-      ScheduleOfEveryDayConst[day as keyof typeof ScheduleOfEveryDayConst];
+    let scheduleOfDay = ScheduleOfEveryDayConst[day as keyof typeof ScheduleOfEveryDayConst];
 
-    let found = scheduleOfDay.filter(
-      (item: scheduleObjectType) => item.startH === nextStartH
-    );
+    let found = scheduleOfDay.filter((item: scheduleObjectType) => item.startH === nextStartH);
     // array of single item
     return found[0];
   }
@@ -385,16 +368,14 @@ export default function Shop({
     const hoursNow = d.getHours();
     const minutesNow = d.getMinutes();
     if (hoursNow < singleSession.endH) return true;
-    if (hoursNow === singleSession.endH && minutesNow <= singleSession.endM)
-      return true;
+    if (hoursNow === singleSession.endH && minutesNow <= singleSession.endM) return true;
     return false;
   }
 
   function checkIfItsCurrentScheduleActiveTime(singleSession: any): boolean {
     const hoursNow = d.getHours();
     const minutesNow = d.getMinutes();
-    if (singleSession.startH < hoursNow && hoursNow < singleSession.endH)
-      return true;
+    if (singleSession.startH < hoursNow && hoursNow < singleSession.endH) return true;
     if (
       // time is 9:10 // session 9:20 =>9:30
       singleSession.startH === hoursNow &&
@@ -478,11 +459,10 @@ export default function Shop({
           <h4>About us</h4>
           <p>
             {" "}
-            we are a small local shop in {name}, founded in 2013, we offer
-            professional services , guaranteed products and refund
+            we are a small local shop in {name}, founded in 2013, we offer professional services ,
+            guaranteed products and refund
             <br />
-            possibilities. contacts : +216 93111251 <br /> owner : hammadi
-            azaiez
+            possibilities. contacts : +216 93111251 <br /> owner : hammadi azaiez
             <br />
             address : {address}
           </p>

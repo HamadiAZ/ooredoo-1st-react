@@ -1,13 +1,25 @@
-import React, { useState } from "react";
+import React, { useState, useReducer } from "react";
 import { MdDelete } from "react-icons/md";
 
-import { basketProductType, scheduleObjectType, scheduleCheckoutObjectType } from "../types/types";
+import {
+  SelectorType,
+  basketProductType,
+  scheduleObjectType,
+  scheduleCheckoutObjectType,
+  Selector,
+} from "../types/types";
 
 const userName = "hammadi azaiez";
 const mdpChosen = "cash";
 const mdvChosen = "surplace";
 const deliverTimeChosen = "10:10";
 const addressChosen = "";
+
+const initialState: SelectorType = {
+  inputTimeSelector: "10:10",
+  inputMdpSelector: "cash",
+  inputMdvSelector: "surplace",
+};
 
 export default function CheckOut({
   shoppingBasket,
@@ -23,6 +35,22 @@ export default function CheckOut({
   const [orderStatus, setOrderStatus] = useState<string>("not-ordered");
 
   const [inputTimeSelector, setInputTimeSelector] = useState<string>("10:10");
+
+  //onClick={() => dispatch({type: 'decrement'})}
+
+  function reducer(state: SelectorType, action: any): SelectorType {
+    switch (action.type) {
+      case Selector.time:
+        return { ...state, inputTimeSelector: action.payload };
+      case Selector.mdp:
+        return { ...state, inputMdpSelector: action.payload };
+      case Selector.mdv:
+        return { ...state, inputMdvSelector: action.payload };
+      default:
+        return state;
+    }
+  }
+  const [state, dispatch] = useReducer(reducer, initialState);
 
   function handleDeleteItem(item: basketProductType): void {
     setShoppingBasket((prev: basketProductType[]) => {
@@ -85,7 +113,13 @@ export default function CheckOut({
   }
 
   function handleInputTimeSelector(event: React.ChangeEvent<HTMLSelectElement>): void {
-    setInputTimeSelector(event.target.value);
+    dispatch({ type: Selector.time, payload: event.target.value });
+  }
+  function handleInputMdvSelector(event: React.ChangeEvent<HTMLSelectElement>): void {
+    dispatch({ type: Selector.mdv, payload: event.target.value });
+  }
+  function handleInputMdpSelector(event: React.ChangeEvent<HTMLSelectElement>): void {
+    dispatch({ type: Selector.mdp, payload: event.target.value });
   }
 
   function add15Min(h: number, m: number): { h: number; m: number } {
@@ -237,7 +271,7 @@ export default function CheckOut({
           arrayOf15Minutes.push(newItem);
         } else {
           // first item cant be put in the array
-          // keep adding temp time until its out of schedule or "inside again?? i dont think so"
+          // keep adding temp time until its out of schedule or "inside again?? i don't think so"
           arrayStartH = newItemTime.h;
           arrayStartM = newItemTime.m;
           if (arrayStartH > schedule.endH || arrayStartH) break;
@@ -324,7 +358,8 @@ export default function CheckOut({
               <td>TOTAL </td>
               <td>
                 {shoppingBasket.reduce(
-                  (accum: number, value: basketProductType) => accum + value.quantity * value.price,
+                  (accumulator: number, value: basketProductType) =>
+                    accumulator + value.quantity * value.price,
                   0
                 )}
               </td>
@@ -332,7 +367,11 @@ export default function CheckOut({
                 <p>select picking time :</p>
               </td>
               <td>
-                <select name="select" value={inputTimeSelector} onChange={handleInputTimeSelector}>
+                <select
+                  name="select"
+                  value={state[Selector.time]}
+                  onChange={handleInputTimeSelector}
+                >
                   {newSelectorArray.map((item: any) => {
                     return (
                       <option
@@ -343,6 +382,34 @@ export default function CheckOut({
                       </option>
                     );
                   })}
+                </select>
+              </td>
+            </tr>
+            <tr style={{ fontWeight: "bold" }}>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td>
+                <p>select picking method :</p>
+              </td>
+              <td>
+                <select name="select" value={state[Selector.mdv]} onChange={handleInputMdvSelector}>
+                  {}
+                </select>
+              </td>
+            </tr>
+            <tr style={{ fontWeight: "bold" }}>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td>
+                <p>select payment method :</p>
+              </td>
+              <td>
+                <select name="select" value={state[Selector.mdp]} onChange={handleInputMdpSelector}>
+                  {}
                 </select>
               </td>
             </tr>
