@@ -189,6 +189,48 @@
   margin: 3rem 0 4rem 0;
 }
 
+#prompt-main-root-container {
+  width: fit-content;
+  min-width: 30rem;
+  min-height: 15rem;
+  margin: auto auto;
+  padding: 1rem;
+}
+#prompt-main-root-container table {
+  box-sizing: border-box;
+  width: 100%;
+}
+#prompt-main-root-container td {
+  padding: 0.4rem;
+  box-sizing: border-box;
+}
+#prompt-main-root-container input {
+  width: 3rem;
+  padding: 0.2rem;
+  font-weight: bold;
+}
+#prompt-main-root-container select {
+  width: 8rem;
+  padding: 0.2rem;
+  font-weight: bold;
+}
+#admin-order-prompt-content-container {
+  box-sizing: border-box;
+  background-color: white;
+  display: flex;
+  flex-direction: column;
+  top: auto;
+  color: black;
+  font-size: 1rem;
+  position: relative;
+  align-items: center;
+  justify-content: center;
+  width: fit-content;
+  height: fit-content;
+  z-index: 1004;
+  border-radius: 8px;
+}
+
 @media (max-width: 450px) {
   #add-admin-form {
     font-size: 1.1rem;

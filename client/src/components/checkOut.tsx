@@ -19,10 +19,10 @@ let shopId: number;
 let startCountingToRedirect: boolean = false;
 
 const initialState: SelectorType = {
-  inputTimeSelector: "10:10",
+  inputTimeSelector: "init",
   inputMdpSelector: "cash",
   inputMdvSelector: "surplace",
-  inputAddrSelector: "",
+  inputAddrSelector: "--",
 };
 
 export default function CheckOut({
@@ -242,6 +242,7 @@ export default function CheckOut({
         selectorArray.push(...newItems);
       }
     }
+    // update init value only if array[0] exist
     return selectorArray;
   }
 
@@ -316,6 +317,14 @@ export default function CheckOut({
 
   useEffect(() => {
     if (shoppingBasket.length) getShopData(shoppingBasket[0].shopId);
+
+    if (newSelectorArray.length) {
+      let arr = newSelectorArray;
+      dispatch({
+        type: Selector.time,
+        payload: `${arr[0].day} | ${arr[0].hours} : ${arr[0].minutes}`,
+      });
+    }
   }, []);
 
   const navigate = useNavigate();
@@ -324,7 +333,6 @@ export default function CheckOut({
     if (startCountingToRedirect) {
       interval = setInterval(() => {
         if (counter < 1) {
-          console.log("readdir");
           navigate(-1);
         }
 

@@ -3,6 +3,9 @@
   background-color: white;
   min-width: 15rem;
 }
+* {
+  box-sizing: border-box;
+}
 header {
   display: flex;
   flex-direction: row;
@@ -121,7 +124,7 @@ header {
   padding: 0;
 }
 #checkout-main-root-container {
-  width: fit-content;
+  width: 50rem;
   min-width: 30rem;
   min-height: 15rem;
   margin: auto auto;
@@ -384,7 +387,8 @@ footer {
   color: black;
   font-size: 1rem;
   position: relative;
-  width: 50%;
+  min-width: 50%;
+  width: fit-content;
   height: 30%;
   z-index: 1004;
   border-radius: 8px;

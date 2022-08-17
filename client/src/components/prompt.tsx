@@ -1,10 +1,7 @@
 export default function Prompt({ setPrompt, Function, action }: any) {
   return (
     <div id="prompt-root-container" onClick={() => setPrompt(false)}>
-      <div
-        id="prompt-content-container"
-        onClick={(event) => event.stopPropagation()}
-      >
+      <div id="prompt-content-container" onClick={(event) => event.stopPropagation()}>
         <p>
           Delete item :<span>{action.item.name}</span>{" "}
         </p>

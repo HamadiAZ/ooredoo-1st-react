@@ -124,7 +124,7 @@ export default function Shop({
       );
     }
   }
-  console.log(shopId, "basketshop:", shoppingBasket[0].shopId);
+
   function checkIfBasketConainElementFromOtherShops(): boolean {
     if (!shoppingBasket.length) return false; // basket empty
     if (shoppingBasket[0].shopId !== parseInt(shopId || shoppingBasket[0].shopId)) return true;
