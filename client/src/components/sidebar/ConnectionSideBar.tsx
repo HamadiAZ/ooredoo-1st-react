@@ -12,20 +12,20 @@ export default function ConnectionSideBar(props: any): JSX.Element {
         <p>E-mail</p>
         <div style={{ display: "flex" }}>
           <FiMail id="FiMail" />
-          <input type="email" placeholder="Donner votre email" />
+          <input type="email" placeholder="your password" />
         </div>
         <hr />
         <p>Password</p>
         <div style={{ display: "flex" }}>
           <RiLockPasswordLine id="FiMail" />
-          <input type="email" placeholder="Donner votre email" />
+          <input type="email" placeholder="your email" />
         </div>
         <hr />
         <Link to="/forgotPassword">
-          <p style={{ marginLeft: "40%" }}>Mot de Passe oublié?</p>
+          <p style={{ marginLeft: "40%" }}>Password forgotten</p>
         </Link>
-        <button type="submit"> CONNEXION</button>
-        <p>OU</p>
+        <button type="submit"> CONNECTION</button>
+        <p>Or</p>
         <p
           style={{
             textDecoration: "underline",
@@ -37,21 +37,21 @@ export default function ConnectionSideBar(props: any): JSX.Element {
         </p>
       </form>
       <hr />
-      <p style={{ textAlign: "left" }}>En continuant, vous acceptez nos :</p>
+      <p style={{ textAlign: "left" }}>while continuing , you agree to :</p>
       <ul id="conditionsGeneraleList">
         <li
           onClick={(): void => {
             props.setOpenedPage("conditions1");
           }}
         >
-          Conditions Générales d'Utilisation
+          General usage conditions
         </li>
         <li
           onClick={(): void => {
             props.setOpenedPage("conditions2");
           }}
         >
-          Conditions Générales de Vente
+          General selling conditions
         </li>
       </ul>
       <p
@@ -62,7 +62,7 @@ export default function ConnectionSideBar(props: any): JSX.Element {
           textDecoration: "underline",
         }}
       >
-        Mention Légales
+        Legal Mentions
       </p>
     </div>
   );
