@@ -19,6 +19,8 @@ app.listen(5000, () => {});
 // server the public folder as default /
 app.use(express.static("public"));
 
+app.use(express.json()); //automatically handle json types on api request
+
 //routes
 
 //            admin apis /////////////////////////////////////////////////////////
