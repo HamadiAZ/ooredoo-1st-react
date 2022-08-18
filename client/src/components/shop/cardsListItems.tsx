@@ -1,4 +1,5 @@
 import React from "react";
+import { MdPadding } from "react-icons/md";
 import { singleProductObjectType } from "../../types/types";
 export default function CardsListItems(
   {
@@ -22,7 +23,10 @@ export default function CardsListItems(
               }
             />
             <div className="li-button-and-name-container">
-              <p>{item.name}</p>
+              <p style={{ fontSize: "1.2rem", padding: "" }}>{item.name}</p>
+              <p style={{ fontSize: "1rem", padding: "0", margin: "0" }}>
+                {"price : " + item.price + " DT"}
+              </p>
               <p
                 className="btn buy"
                 style={{ width: "fit-content", padding: "0 1rem" }}

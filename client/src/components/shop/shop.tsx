@@ -442,14 +442,16 @@ export default function Shop({
       <PaymentMethods shopData={shopData} />
       <ProductMenu handleAddToCard={handleAddToCard} />
       <div className="shop-div-double-items-flex-container">
-        {/*<iframe
-          id="gmap_canvas"
-          src={`https://maps.google.com/maps?q=${lat},${long}&t=&z=13&ie=UTF8&iwloc=&output=embed`}
-          frameBorder={0}
-          scrolling="no"
-          marginHeight={0}
-          marginWidth={0}
-        /> */}
+        {
+          <iframe
+            id="gmap_canvas"
+            src={`https://maps.google.com/maps?q=${lat},${long}&t=&z=13&ie=UTF8&iwloc=&output=embed`}
+            frameBorder={0}
+            scrolling="no"
+            marginHeight={0}
+            marginWidth={0}
+          />
+        }
 
         <div className="div-card-text">
           <h4>About us</h4>

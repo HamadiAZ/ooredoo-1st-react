@@ -12,6 +12,7 @@ import {
   scheduleCheckoutObjectType,
   Selector,
   ShopObjectJSONType,
+  orderToDb,
 } from "../types/types";
 
 const userName = "hammadi azaiez";
@@ -88,7 +89,7 @@ export default function CheckOut({
   }
 
   async function handleOrder(): Promise<void> {
-    const dataBody = {
+    const dataBody: orderToDb = {
       shopId: shoppingBasket[0].shopId,
       userId: 1,
       userName: userName,
@@ -102,6 +103,7 @@ export default function CheckOut({
         return copy;
       }),
     };
+    console.log(dataBody);
     try {
       const res = await fetch(globalPath + "/api/order/newOrder", {
         method: "POST",
@@ -258,7 +260,10 @@ export default function CheckOut({
     return selectorArray;
   }
 
-  function getArraysOf15Minutes(schedule: scheduleObjectType, day: string): any[] {
+  function getArraysOf15Minutes(
+    schedule: scheduleObjectType,
+    day: string
+  ): scheduleCheckoutObjectType[] {
     const d = new Date();
     const hoursNow = d.getHours();
     const minutesNow = d.getMinutes();
@@ -431,7 +436,7 @@ export default function CheckOut({
                   value={state[Selector.time]}
                   onChange={handleInputTimeSelector}
                 >
-                  {newSelectorArray.map((item: any) => {
+                  {newSelectorArray.map((item: scheduleCheckoutObjectType) => {
                     return (
                       <option
                         key={item.hours + ":" + item.minutes}

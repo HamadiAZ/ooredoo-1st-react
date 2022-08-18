@@ -107,8 +107,13 @@ header {
 }
 
 .basket-delete-icon {
+  margin-left: 1rem;
   width: 1.2rem;
   height: 1.2rem;
+}
+.basket-delete-icon:hover {
+  cursor: pointer;
+  box-shadow: 0 0 8px rgba(0, 0, 0, 0.5);
 }
 .link {
   font-size: 1.1rem;

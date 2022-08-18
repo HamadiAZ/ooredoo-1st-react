@@ -13,7 +13,7 @@ export default function paymentMethods({ shopData }: { shopData: ShopObjectJSONT
   return (
     <div className="shop-payment-methods-flex-container">
       <div className="shop-single-payment-methods-flex-container">
-        <p>les methodes de paiement :</p>
+        <p>Payment methods :</p>
         <div style={{ display: "flex" }}>
           {shopData.mdp.cc && (
             <AiOutlineCreditCard className="payment-methods-icons" title="Credit card payment" />
@@ -28,7 +28,7 @@ export default function paymentMethods({ shopData }: { shopData: ShopObjectJSONT
         </div>
       </div>
       <div className="shop-single-payment-methods-flex-container">
-        <p>mode de ventes :</p>
+        <p>Pickup options :</p>
         <div style={{ display: "flex" }}>
           {shopData.mdv.surplace && (
             <AiOutlineShoppingCart className="payment-methods-icons" title="service surplace" />

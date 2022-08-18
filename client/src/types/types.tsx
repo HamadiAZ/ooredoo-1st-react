@@ -141,3 +141,36 @@ export enum Selector {
   mdv = "inputMdvSelector",
   addr = "inputAddrSelector",
 }
+
+export type orderContentType = {
+  product_id: number;
+  name: string;
+  category: string;
+  manufacture: string;
+  price: number;
+  quantity: number;
+  quantityLeft: number;
+  shopId: number;
+};
+export type orderToDb = {
+  shopId: number;
+  userId: number;
+  userName: string;
+  mdp: string;
+  mdv: string;
+  deliveryTime: string;
+  deliveryAddr: string;
+  content: orderContentType[];
+};
+export type orderFromDb = {
+  order_id: number;
+  shop_id: number;
+  user_id: number;
+  user_name: string;
+  mdp: string;
+  mdv: string;
+  created_at: string;
+  delivery_addr: string;
+  delivery_time: string;
+  content: orderContentType[];
+};

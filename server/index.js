@@ -54,6 +54,18 @@ app.get("/api/admin/getOrders", async (req, res) => {
   }
 });
 
+app.put("/api/admin/DeleteOrder/:order_id", async (req, res) => {
+  try {
+    const { order_id } = req.params;
+    data = await pool.query(
+      `DELETE FROM orders WHERE ("order_id"='${order_id}') RETURNING "order_id"`
+    );
+    res.json(data.fields);
+  } catch (error) {
+    console.error(error.message);
+  }
+});
+
 //  stores api       /////////////////////////////////////////////////////////
 app.get("/api/getStores", async (req, res) => {
   try {
