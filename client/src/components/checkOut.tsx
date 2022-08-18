@@ -3,7 +3,7 @@ import React, { useState, useReducer, useEffect } from "react";
 import { MdDelete } from "react-icons/md";
 import { Link, useNavigate } from "react-router-dom";
 
-import { ShopDataInit } from "../const/const";
+import { ShopDataInit, daysOfWeek } from "../const/const";
 
 import {
   SelectorType,
@@ -15,7 +15,7 @@ import {
 } from "../types/types";
 
 const userName = "hammadi azaiez";
-let shopId: number;
+
 let startCountingToRedirect: boolean = false;
 
 const initialState: SelectorType = {
@@ -75,6 +75,18 @@ export default function CheckOut({
     });
   }
 
+  function correctDBPickingUpDate(inputTimeSelector: string): string {
+    let todayIndex: number = new Date().getDay();
+    const today = daysOfWeek[todayIndex as keyof typeof daysOfWeek];
+    let timePart: string = inputTimeSelector.slice(inputTimeSelector.indexOf("|") || 3);
+    let dayPart: string = inputTimeSelector.slice(0, inputTimeSelector.indexOf("|") || 3);
+    if (dayPart.length > 4) {
+      console.log("yes corrected");
+      return today + timePart;
+    }
+    return dayPart + timePart;
+  }
+
   async function handleOrder(): Promise<void> {
     const dataBody = {
       shopId: shoppingBasket[0].shopId,
@@ -82,7 +94,7 @@ export default function CheckOut({
       userName: userName,
       mdp: state.inputMdpSelector,
       mdv: state.inputMdvSelector,
-      deliveryTime: state.inputTimeSelector,
+      deliveryTime: correctDBPickingUpDate(state.inputTimeSelector),
       deliveryAddr: state.inputAddrSelector,
       content: shoppingBasket.map((item) => {
         let copy: any = { ...item };

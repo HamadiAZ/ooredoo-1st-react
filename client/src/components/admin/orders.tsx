@@ -39,7 +39,7 @@ export default function Orders({ globalPath }: { globalPath: string }) {
             <th>date</th>
             <th>paiement</th>
             <th>md vente</th>
-            <th>delivery date</th>
+            <th>pick up date</th>
             <th>delivery address</th>
             <th>content</th>
           </tr>
