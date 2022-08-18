@@ -112,7 +112,7 @@ app.get("/api/getShopData/:id_shop", async (req, res) => {
 app.post("/api/order/newOrder", async (req, res) => {
   try {
     let data = await req.body;
-    console.log(data);
+    //console.log(data);
     const newOrder = await pool.query(`
     INSERT INTO orders( shop_id, user_id, user_name, mdp,mdv,delivery_addr ,delivery_time,content)
      VALUES(
@@ -132,3 +132,5 @@ app.post("/api/order/newOrder", async (req, res) => {
     console.error(error.message);
   }
 });
+
+///// user authentication
