@@ -134,3 +134,23 @@ app.post("/api/order/newOrder", async (req, res) => {
 });
 
 ///// user authentication
+
+app.post("/api/auth/reg", async (req, res) => {
+  try {
+    let data = await req.body;
+    //console.log(data);
+    const newUser = await pool.query(`
+    INSERT INTO users(name,email,username,password,privilege)
+     VALUES(
+      '${data.name}',
+      '${data.email}',
+      '${data.username}',
+      '${data.password}',
+      '${data.privilege}') RETURNING username;
+    `);
+    res.send(newUser.rows[0]);
+  } catch (error) {
+    res.send(JSON.stringify("error " + error.message));
+    console.error(error.message);
+  }
+});

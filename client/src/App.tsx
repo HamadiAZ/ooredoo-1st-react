@@ -49,7 +49,7 @@ export default function App(): JSX.Element {
             }
           />
           <Route
-            path="/checkOut"
+            path="/checkOut:shop_id"
             element={
               <CheckOut
                 shoppingBasket={shoppingBasket}

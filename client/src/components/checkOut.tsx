@@ -1,7 +1,7 @@
 import { readdir } from "fs";
 import React, { useState, useReducer, useEffect } from "react";
 import { MdDelete } from "react-icons/md";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useParams } from "react-router-dom";
 
 import { ShopDataInit, daysOfWeek } from "../const/const";
 
@@ -41,6 +41,8 @@ export default function CheckOut({
   const [orderStatus, setOrderStatus] = useState<string>("not-ordered");
   const [shopData, setShopData] = useState<ShopObjectJSONType>(ShopDataInit);
   const [state, dispatch] = useReducer(reducer, initialState);
+
+  const shopId = useParams().shop_id;
 
   async function getShopData(shopId: number): Promise<void> {
     try {
@@ -352,6 +354,12 @@ export default function CheckOut({
         if (counter < 1) {
           navigate(-1);
         }
+        if (counter < 0) {
+          // counter -1 : backup method !
+          // navigate(-1) wont work if the checkout is opened in new window/tab
+          // i still need to fix this store id
+          navigate(/*i need to fix this /1:storeId/ to be dynamic*/ "/1/shops/" + shopId);
+        }
 
         setCounter((seconds: number) => seconds - 1);
       }, 1000);
@@ -542,7 +550,12 @@ export default function CheckOut({
                 you will go back to shop in {counter}
               </p>
 
-              <p onClick={() => navigate(-1)} className="link">
+              <p
+                onClick={() =>
+                  navigate(/*i need to fix this /1:storeId/ to be dynamic*/ "/1/shops/" + shopId)
+                }
+                className="link"
+              >
                 Or Click Here!
               </p>
             </div>

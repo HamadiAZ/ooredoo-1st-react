@@ -39,16 +39,9 @@ export default function Basket({
 
   return (
     <div id="basket-root-container">
-      <div
-        className="two-items-flex-space-between"
-        onClick={() => setIsBasketShown(false)}
-      >
+      <div className="two-items-flex-space-between" onClick={() => setIsBasketShown(false)}>
         <p>Card</p>
-        <p>
-          {basketCounter > 1
-            ? basketCounter + " items"
-            : basketCounter + " item"}
-        </p>
+        <p>{basketCounter > 1 ? basketCounter + " items" : basketCounter + " item"}</p>
       </div>
 
       <hr />
@@ -77,9 +70,7 @@ export default function Basket({
                       ></input>
                     </td>
                     <td>{item.price}</td>
-                    <td style={{ fontWeight: "bold" }}>
-                      {item.quantity * item.price}
-                    </td>
+                    <td style={{ fontWeight: "bold" }}>{item.quantity * item.price}</td>
                     <td>
                       <MdDelete
                         onClick={() => handleDeleteItem(item)}
@@ -129,7 +120,7 @@ export default function Basket({
           Cancel
         </div>
         {basketCounter > 0 ? (
-          <Link to="/checkOut">
+          <Link to={"/checkOut" + shoppingBasket[0].shopId}>
             <div className="btn btn-small buy">Checkout</div>
           </Link>
         ) : (
