@@ -28,6 +28,7 @@ export default function App(): JSX.Element {
   });
 
   const { loginStatus } = useContext(AuthContext);
+
   useEffect(() => {
     localStorage.setItem("shoppingBasket", JSON.stringify(shoppingBasket));
   }, [shoppingBasket]);

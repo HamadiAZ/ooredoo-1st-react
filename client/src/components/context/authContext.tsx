@@ -1,4 +1,4 @@
-import React, { createContext, useEffect, useState } from "react";
+import { createContext, useEffect, useState } from "react";
 import { globalPath } from "../../const/const";
 import { LoggedInState } from "../../types/types";
 
@@ -58,7 +58,6 @@ export function AuthContextProvider(props: any) {
     getLoginStatus();
   }, []);
 
-  //console.log(loginStatus);
   return (
     <AuthContext.Provider value={{ loginStatus, getLoginStatus }}>
       {/* so our App will be as children here , every component will se these values
