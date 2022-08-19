@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useContext } from "react";
 import { useState } from "react";
 import ConnectionSideBar from "./sidebar/ConnectionSideBar";
 import { Conditions1, Conditions2 } from "./sidebar/ConditionSideBar";
@@ -6,14 +6,15 @@ import { Conditions1, Conditions2 } from "./sidebar/ConditionSideBar";
 // icons
 import { BsList } from "react-icons/bs";
 import { IoIosArrowBack } from "react-icons/io";
+import AuthContext from "./context/authContext";
 
 export default function SideMenu(props: any): JSX.Element {
   const [openedPage, setOpenedPage] = useState("connection");
 
+  const loginStatus = useContext(AuthContext);
+
   function handleClick() {
-    openedPage == "connection"
-      ? props.CloseWindow()
-      : setOpenedPage("connection");
+    openedPage == "connection" ? props.CloseWindow() : setOpenedPage("connection");
   }
   let page = {
     title: "Connexion",
@@ -35,7 +36,7 @@ export default function SideMenu(props: any): JSX.Element {
 
     default:
       page = {
-        title: "Connexion",
+        title: loginStatus.loginStatus.isLoggedIn ? "manage" : "Connexion",
         content: <ConnectionSideBar setOpenedPage={setOpenedPage} />,
       };
       break;
@@ -50,9 +51,7 @@ export default function SideMenu(props: any): JSX.Element {
         <div id="side-menu--right-side--header">
           <IoIosArrowBack
             id="BsList"
-            onClick={
-              openedPage == "connection" ? props.CloseWindow : handleClick
-            }
+            onClick={openedPage == "connection" ? props.CloseWindow : handleClick}
           />
           <h4>{page.title}</h4>
           <BsList id="BsList" onClick={props.CloseWindow} />

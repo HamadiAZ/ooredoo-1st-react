@@ -174,3 +174,27 @@ export type orderFromDb = {
   delivery_time: string;
   content: orderContentType[];
 };
+
+export type authenticationStateType = {
+  emailLogin: string;
+  passwordLogin: string;
+  usernameReg: string;
+  nameReg: string;
+  emailReg: string;
+  passwordReg: string;
+};
+export enum authenticationStateENUM {
+  emailLogin = "emailLogin",
+  passwordLogin = "passwordLogin",
+  usernameReg = "usernameReg",
+  nameReg = "nameReg",
+  emailReg = "emailReg",
+  passwordReg = "passwordReg",
+}
+
+export type LoggedInState = {
+  isLoggedIn: boolean;
+  privilege: string;
+  name: string;
+  username: string;
+};

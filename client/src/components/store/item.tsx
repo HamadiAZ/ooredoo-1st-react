@@ -9,19 +9,17 @@ import { AiFillEdit, AiOutlineCreditCard } from "react-icons/ai";
 import { AiOutlineShoppingCart } from "react-icons/ai";
 import { BiPackage } from "react-icons/bi";
 import { TbTruckDelivery } from "react-icons/tb";
+import { env } from "process";
 
-export default function Item({
-  data,
-  storePath,
-  selectedItem,
-}: any): JSX.Element {
+export default function Item({ data, storePath, selectedItem }: any): JSX.Element {
   const [distance, setDistance] = useState(0);
 
+  console.log(process.env.REACT_APP_X_RapidAPI_Key);
   const options = {
     method: "GET",
     headers: {
       "Content-Type": "application/json",
-      "X-RapidAPI-Key": "85ca2c7300msh8ac55003079c1aep19f161jsnbd239aabbf19",
+      "X-RapidAPI-Key": process.env.REACT_APP_X_RapidAPI_Key || "",
       "X-RapidAPI-Host": "distance-calculator.p.rapidapi.com",
     },
   };
@@ -39,17 +37,18 @@ export default function Item({
     lat2: number,
     long2: number
   ): Promise<void> {
-    /*     try {
+    try {
       let res = await fetch(
-        `https://distance-calculator.p.rapidapi.com/distance/simple?lat_1=${lat1}&long_1=%20${long1}&lat_2=${lat2}&long_2=${long2}&decimal_places=2`,
-        options
+        `https://distance-calculator.p.rapidapi.com/distance/simple?lat_1=${lat1}&long_1=%20${long1}&lat_2=${lat2}&long_2=${long2}&decimal_places=2`
+        //,options save api
       );
       let APIdata = await res.json();
+      if (APIdata.distance === undefined) APIdata.distance = 0;
       setDistance(APIdata.distance);
-      console.log(APIdata.distance);
+      //console.log(APIdata.distance);
     } catch (error) {
       console.error(error);
-    } */
+    }
   }
 
   const d = new Date();
@@ -66,8 +65,7 @@ export default function Item({
     for (let group of schedule) {
       if (group.days[currentDay]) {
         for (let singleSession of group.schedule) {
-          if (singleSession.startH < hoursNow && hoursNow < singleSession.endH)
-            return true;
+          if (singleSession.startH < hoursNow && hoursNow < singleSession.endH) return true;
           if (
             // time is 9:10 // session 9:20 =>9:30
             singleSession.startH === hoursNow &&
@@ -111,12 +109,7 @@ export default function Item({
   }
 
   useEffect((): void => {
-    getDistance(
-      selectedItem.latitude,
-      selectedItem.longitude,
-      shopAddress.lat,
-      shopAddress.long
-    );
+    getDistance(selectedItem.latitude, selectedItem.longitude, shopAddress.lat, shopAddress.long);
   }, [selectedItem]);
 
   return (
@@ -138,43 +131,24 @@ export default function Item({
         </div>
         <div>
           {data.mdp.cc && (
-            <AiOutlineCreditCard
-              className="payment-methods-icons"
-              title="Credit card payment"
-            />
+            <AiOutlineCreditCard className="payment-methods-icons" title="Credit card payment" />
           )}
-          {data.mdp.cash && (
-            <BsCash className="payment-methods-icons" title="Cash payment" />
-          )}
+          {data.mdp.cash && <BsCash className="payment-methods-icons" title="Cash payment" />}
           {data.mdp.voucher && (
-            <IoTicketOutline
-              className="payment-methods-icons"
-              title="bon dachat"
-            />
+            <IoTicketOutline className="payment-methods-icons" title="bon dachat" />
           )}
           {data.mdp.check && (
-            <AiFillEdit
-              className="payment-methods-icons"
-              title="payment cheque"
-            />
+            <AiFillEdit className="payment-methods-icons" title="payment cheque" />
           )}
         </div>
         <div>
           {data.mdv.surplace && (
-            <AiOutlineShoppingCart
-              className="payment-methods-icons"
-              title="service surplace"
-            />
+            <AiOutlineShoppingCart className="payment-methods-icons" title="service surplace" />
           )}
           {data.mdv.delivery && (
-            <TbTruckDelivery
-              className="payment-methods-icons"
-              title="livraison"
-            />
+            <TbTruckDelivery className="payment-methods-icons" title="livraison" />
           )}
-          {data.mdv.export && (
-            <BiPackage className="payment-methods-icons" title="packaging " />
-          )}
+          {data.mdv.export && <BiPackage className="payment-methods-icons" title="packaging " />}
         </div>
       </div>
     </Link>

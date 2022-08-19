@@ -1,5 +1,5 @@
 import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useContext } from "react";
 
 import Home from "./components/home/Home";
 import ForgotPassword from "./components/forgotPassword";
@@ -11,6 +11,7 @@ import Admin from "./components/admin/admin";
 import Shop from "./components/shop/shop";
 import CheckOut from "./components/checkOut";
 import Orders from "./components/admin/orders";
+import AuthContext from "./components/context/authContext";
 
 import { basketProductType } from "./types/types";
 
@@ -26,6 +27,7 @@ export default function App(): JSX.Element {
     return initialValue || [];
   });
 
+  const { loginStatus } = useContext(AuthContext);
   useEffect(() => {
     localStorage.setItem("shoppingBasket", JSON.stringify(shoppingBasket));
   }, [shoppingBasket]);
@@ -36,7 +38,7 @@ export default function App(): JSX.Element {
         <Header shoppingBasket={shoppingBasket} setShoppingBasket={setShoppingBasket} />
         <Routes>
           <Route path="/" element={<Home />} />
-          <Route path="/forgotPassword" element={<ForgotPassword />} />
+          {!loginStatus.isLoggedIn && <Route path="/forgotPassword" element={<ForgotPassword />} />}
           <Route path="/stores/:storeId" element={<Store globalPath={globalPath} />} />
           <Route
             path="/:storeId/shops/:shopId"
@@ -58,10 +60,13 @@ export default function App(): JSX.Element {
               />
             }
           ></Route>
-          <Route path="/admin/addShop" element={<AddShop globalPath={globalPath} />} />
-          <Route path="/admin/orders" element={<Orders globalPath={globalPath} />} />
-
-          <Route path="/admin" element={<Admin globalPath={globalPath} />} />
+          {loginStatus.isLoggedIn && loginStatus.privilege === "admin" && (
+            <>
+              <Route path="/admin/addShop" element={<AddShop globalPath={globalPath} />} />
+              <Route path="/admin/orders" element={<Orders globalPath={globalPath} />} />
+              <Route path="/admin" element={<Admin globalPath={globalPath} />} />
+            </>
+          )}
         </Routes>
 
         <Footer />

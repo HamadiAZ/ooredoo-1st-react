@@ -1,5 +1,6 @@
 import { daysOfWeekType, ProductsDataArrayType, ShopObjectJSONType } from "../types/types";
 
+export const globalPath: string = "http://localhost:5000";
 export const daysOfWeek: daysOfWeekType = {
   0: "san",
   1: "mon",

@@ -13,7 +13,13 @@ export default function Orders({ globalPath }: { globalPath: string }) {
 
   async function getOrders(): Promise<void> {
     try {
-      let res = await fetch(globalPath + "/api/admin/getOrders/");
+      let res = await fetch(globalPath + "/api/admin/getOrders/", {
+        credentials: "include",
+        headers: {
+          Accept: "application/json",
+          "Content-Type": "application/json",
+        },
+      });
       let data: orderFromDb[] = await res.json();
       setOrders(data);
     } catch (error) {
@@ -29,6 +35,11 @@ export default function Orders({ globalPath }: { globalPath: string }) {
     try {
       const res = await fetch(globalPath + "/api/admin/DeleteOrder/" + item.order_id, {
         method: "PUT",
+        credentials: "include",
+        headers: {
+          Accept: "application/json",
+          "Content-Type": "application/json",
+        },
       });
       const reply = await res.json();
       setOrders(orders.filter((prevItem: typeof orders[0]) => prevItem.order_id !== item.order_id));

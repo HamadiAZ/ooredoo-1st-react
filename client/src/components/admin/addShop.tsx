@@ -30,7 +30,7 @@ const arrayInit: fullScheduleGroupType[] = [
         endM: 0,
         index: 0,
         fulltime: false,
-        currentOrNextOne:false,
+        currentOrNextOne: false,
       },
     ],
     formCheck: true,
@@ -60,8 +60,7 @@ export default function AddShop(props: any) {
   const [suggestionDataArray, setSuggestionDataArray] = useState<any[]>([]);
   const [stores, setStores] = useState<StoreObjectJSONType[]>([]);
 
-  const [fullSchedule, setFullSchedule] =
-    useState<fullScheduleGroupType[]>(arrayInit);
+  const [fullSchedule, setFullSchedule] = useState<fullScheduleGroupType[]>(arrayInit);
 
   const [input, setInput] = useState(inputInit);
 
@@ -122,13 +121,11 @@ export default function AddShop(props: any) {
           method: "POST",
           mode: "cors", // no-cors, *cors, same-origin
           cache: "no-cache", // *default, no-cache, reload, force-cache, only-if-cached
-          credentials: "same-origin", // include, *same-origin, omit
+          credentials: "include",
           headers: {
+            Accept: "application/json",
             "Content-Type": "application/json",
-            // 'Content-Type': 'application/x-www-form-urlencoded',
           },
-          redirect: "follow", // manual, *follow, error
-          referrerPolicy: "no-referrer", // no-referrer, *no-referrer-when-downgrade, origin, origin-when-cross-origin, same-origin, strict-origin, strict-origin-when-cross-origin, unsafe-url
           body: JSON.stringify(jsonObjectToSend),
         });
 
@@ -197,7 +194,7 @@ export default function AddShop(props: any) {
           endM: 0,
           index: 0,
           fulltime: false,
-          currentOrNextOne:false,
+          currentOrNextOne: false,
         },
       ],
       formCheck: false,
@@ -228,9 +225,7 @@ export default function AddShop(props: any) {
         <input
           name="name"
           type="text"
-          className={
-            input.name.trim().length < 2 ? "input-fields-error" : "input-fields"
-          }
+          className={input.name.trim().length < 2 ? "input-fields-error" : "input-fields"}
           value={input.name}
           onChange={handleInputChange}
         />
@@ -325,21 +320,11 @@ export default function AddShop(props: any) {
         <div id="add-shop--mdv-div">
           <div className="checkbox-divs">
             <span> Cash:</span>
-            <input
-              name="cash"
-              type="checkbox"
-              checked={input.cash}
-              onChange={handleInputChange}
-            />
+            <input name="cash" type="checkbox" checked={input.cash} onChange={handleInputChange} />
           </div>
           <div className="checkbox-divs">
             <span> Credit card:</span>
-            <input
-              name="cc"
-              type="checkbox"
-              checked={input.cc}
-              onChange={handleInputChange}
-            />
+            <input name="cc" type="checkbox" checked={input.cc} onChange={handleInputChange} />
           </div>
           <div className="checkbox-divs">
             <span> Tickets :</span>
