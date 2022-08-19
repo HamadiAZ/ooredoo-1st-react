@@ -84,7 +84,6 @@ export default function Shop({
   }
 
   function handleAddToCard(item: singleProductObjectType): void {
-    console.log("contains others:", checkIfBasketConainElementFromOtherShops());
     const newItemInfo = getProductInfo(item.name);
     const newItem: basketProductType = {
       product_id: item.id,
@@ -97,7 +96,7 @@ export default function Shop({
       shopId: parseInt(shopId || "0"),
       shopUpcomingSessions: upcomingSessions,
     };
-    if (!checkIfBasketConainElementFromOtherShops()) {
+    if (!checkIfBasketContainElementFromOtherShops()) {
       setShoppingBasket((prev: basketProductType[]) => {
         const arrayOfProductNames: string[] = prev.map((item: basketProductType) => item.name);
 
@@ -125,7 +124,7 @@ export default function Shop({
     }
   }
 
-  function checkIfBasketConainElementFromOtherShops(): boolean {
+  function checkIfBasketContainElementFromOtherShops(): boolean {
     if (!shoppingBasket.length) return false; // basket empty
     if (shoppingBasket[0].shopId !== parseInt(shopId || shoppingBasket[0].shopId)) return true;
     //shopId || shoppingBasket[0].shopId so if the first one is undefined dont block the code
