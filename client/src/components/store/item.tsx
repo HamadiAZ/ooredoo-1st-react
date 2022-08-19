@@ -38,14 +38,13 @@ export default function Item({ data, storePath, selectedItem }: any): JSX.Elemen
     long2: number
   ): Promise<void> {
     try {
-      let res = await fetch(
+      /* let res = await fetch(
         `https://distance-calculator.p.rapidapi.com/distance/simple?lat_1=${lat1}&long_1=%20${long1}&lat_2=${lat2}&long_2=${long2}&decimal_places=2`
-        //,options save api
+        ,options 
       );
       let APIdata = await res.json();
       if (APIdata.distance === undefined) APIdata.distance = 0;
-      setDistance(APIdata.distance);
-      //console.log(APIdata.distance);
+      setDistance(APIdata.distance); */
     } catch (error) {
       console.error(error);
     }
