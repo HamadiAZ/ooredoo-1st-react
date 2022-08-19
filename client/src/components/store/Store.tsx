@@ -9,7 +9,7 @@ import SearchBox from "../searchBox";
 import Gallery from "./gallery";
 //main
 
-export default function Store({globalPath}: {globalPath: string}): JSX.Element {
+export default function Store({ globalPath }: { globalPath: string }): JSX.Element {
   // vars & states
 
   const [shops, setShops] = useState<ShopObjectJSONType[]>([]);
@@ -17,15 +17,10 @@ export default function Store({globalPath}: {globalPath: string}): JSX.Element {
   let store_id: number = parseInt(useParams().storeId || "");
   const storePath = globalPath + "/stores/" + store_id;
 
-
-
   async function getAllShops() {
     try {
-      const response = await fetch(
-        `http://localhost:5000/api/getShops/${store_id}`
-      );
+      const response = await fetch(`http://localhost:5000/api/getShops/${store_id}`);
       let data: ShopObjectJSONType[] = await response.json();
-      //console.log(data);
       setShops(data);
     } catch (error: any) {
       console.error(error.message);
@@ -40,14 +35,12 @@ export default function Store({globalPath}: {globalPath: string}): JSX.Element {
     name: "Sfax",
     label: "Sfax, Tunisia",
   });
-  useEffect(() => {}, []);
 
   async function handleSearchClick(toggleTheMenuOn: boolean = true) {
     const res = await fetch(
       `http://api.positionstack.com/v1/forward?access_key=a18d5f41712ab974a5fb1382721fd92b&query=${input.address}`
     );
     const mapPage = await res.json();
-    console.log(mapPage.data);
     setSuggestionState(toggleTheMenuOn);
     setSuggestionDataArray(mapPage.data);
   }
@@ -87,12 +80,7 @@ export default function Store({globalPath}: {globalPath: string}): JSX.Element {
       <div id="store-item-root-inMain-container">
         {shops.map((item: any): any => {
           return (
-            <Item
-              key={item.id}
-              data={item}
-              storePath={storePath}
-              selectedItem={selectedItem}
-            />
+            <Item key={item.id} data={item} storePath={storePath} selectedItem={selectedItem} />
           );
         })}
       </div>

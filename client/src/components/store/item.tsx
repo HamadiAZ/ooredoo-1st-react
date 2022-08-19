@@ -14,7 +14,6 @@ import { env } from "process";
 export default function Item({ data, storePath, selectedItem }: any): JSX.Element {
   const [distance, setDistance] = useState(0);
 
-  console.log(process.env.REACT_APP_X_RapidAPI_Key);
   const options = {
     method: "GET",
     headers: {
@@ -24,7 +23,6 @@ export default function Item({ data, storePath, selectedItem }: any): JSX.Elemen
     },
   };
 
-  let isOpen: boolean = true;
   let shopAddress = data.address || {
     long: 0,
     alt: 0,
@@ -55,6 +53,7 @@ export default function Item({ data, storePath, selectedItem }: any): JSX.Elemen
     const dayNumber: number = d.getDay();
     return daysOfWeek[dayNumber as keyof typeof daysOfWeek];
   }
+
   function isShopOpen(): boolean {
     const hoursNow = d.getHours();
     const minutesNow = d.getMinutes();
