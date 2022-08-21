@@ -2,8 +2,8 @@ import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
 import { useState, useEffect, useContext } from "react";
 
 import Home from "./components/home/Home";
-import ForgotPassword from "./components/forgotPassword";
-import Header from "./components/Header";
+import ForgotPassword from "./components/sidebar/forgotPassword";
+import Header from "./components/header/Header";
 import Store from "./components/store/Store";
 import Footer from "./components/Footer";
 import AddShop from "./components/admin/addShop";

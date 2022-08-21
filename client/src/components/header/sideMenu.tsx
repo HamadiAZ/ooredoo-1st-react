@@ -1,12 +1,12 @@
 import React, { useContext } from "react";
 import { useState } from "react";
-import ConnectionSideBar from "./sidebar/ConnectionSideBar";
-import { Conditions1, Conditions2 } from "./sidebar/ConditionSideBar";
+import ConnectionSideBar from "../sidebar/ConnectionSideBar";
+import { Conditions1, Conditions2 } from "../sidebar/ConditionSideBar";
 
 // icons
 import { BsList } from "react-icons/bs";
 import { IoIosArrowBack } from "react-icons/io";
-import AuthContext from "./context/authContext";
+import AuthContext from "../context/authContext";
 
 export default function SideMenu(props: any): JSX.Element {
   const [openedPage, setOpenedPage] = useState("connection");

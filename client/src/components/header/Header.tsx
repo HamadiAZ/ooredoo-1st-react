@@ -1,14 +1,14 @@
 import { useState } from "react";
 import { BsList } from "react-icons/bs";
 import { Link } from "react-router-dom";
-import SideMenu from "../components/sideMenu";
+import SideMenu from "./sideMenu";
 import Basket from "./basket";
 
-import { basketProductType } from "../types/types";
+import { basketProductType } from "../../types/types";
 
 import { AiOutlineShoppingCart } from "react-icons/ai";
 
-let headerImage = require("../images/header.jpg");
+let headerImage = require("../../images/header.jpg");
 
 export default function Header({
   shoppingBasket,

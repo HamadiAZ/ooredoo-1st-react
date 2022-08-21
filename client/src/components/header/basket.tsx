@@ -1,4 +1,4 @@
-import { basketProductType } from "../types/types";
+import { basketProductType } from "../../types/types";
 
 import { MdDelete } from "react-icons/md";
 import { Link } from "react-router-dom";
