@@ -63,6 +63,7 @@ export default function Item({ data, storePath, selectedItem }: any): JSX.Elemen
     for (let group of schedule) {
       if (group.days[currentDay]) {
         for (let singleSession of group.schedule) {
+          if (singleSession.fulltime === true) return true;
           if (singleSession.startH < hoursNow && hoursNow < singleSession.endH) return true;
           if (
             // time is 9:10 // session 9:20 =>9:30

@@ -153,6 +153,7 @@ export default function Shop({
       for (let group of schedule) {
         if ((group.days as any)[currentDay]) {
           for (let singleSession of group.schedule) {
+            if (singleSession.fulltime === true) return true;
             if (singleSession.startH < hoursNow && hoursNow < singleSession.endH) return true;
             if (
               // time is 9:10 // session 9:20 =>9:30
@@ -229,7 +230,7 @@ export default function Shop({
       let startingIndex = 0;
       currentDaySchedule.forEach((item) => {
         index++;
-        if (checkIfItsCurrentScheduleActiveTime(item)) {
+        if (checkIfItsCurrentScheduleActiveTime(item) || item.fulltime) {
           startingIndex = index;
           item.currentOrNextOne = true;
         } else {
@@ -442,7 +443,6 @@ export default function Shop({
     ? { backgroundColor: "#42c966", color: "white" }
     : { backgroundColor: "#424dc9", color: "white" };
 
-  console.log(upcomingSessions);
   return (
     <div>
       <h1>welcome to ooredoo {name} shop</h1>

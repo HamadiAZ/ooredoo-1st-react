@@ -1,5 +1,6 @@
 const router = require("express").Router();
 const authAdmin = require("../middleware/authAdmin");
+const pool = require("../db");
 //            admin apis /////////////////////////////////////////////////////////
 
 /* 
