@@ -16,6 +16,7 @@ import { daysOfWeek, ShopDataInit, products } from "../../const/const";
 
 import "../../styles/shop.css";
 import PaymentMethods from "./paymentMethods";
+import Basket from "../header/basket";
 
 const initialState = {
   mon: [],
@@ -38,7 +39,7 @@ export default function Shop({
 }): JSX.Element {
   let { shopId } = useParams();
 
-  let upcomingTodaySessions: scheduleObjectType[] = [];
+  let upcomingDaySessions: scheduleObjectType[] = [];
 
   const [upcomingSessions, setUpcomingSessions] = useState<{
     day: string;
@@ -249,6 +250,7 @@ export default function Shop({
       // shop is closed now // blue background somewhere
       let dayIndex = d.getDay();
       const arrayOfUpcomingSessionsOfaDay: scheduleObjectType[] = [];
+
       for (let counter = 0; counter < 8; counter++) {
         let day = daysOfWeek[dayIndex as keyof typeof daysOfWeek]; // current day
         //day index is actual day index corresponding to day position in the week;
@@ -302,7 +304,7 @@ export default function Shop({
           } else {
             //upcoming days
             //find the first session of the next DAY THAT THE SHOP IS OPENED AT
-
+            //console.log(scheduleOfDay);
             for (let singleSession of scheduleOfDay) {
               if (singleSession) {
                 setUpcomingSessions({
@@ -312,6 +314,7 @@ export default function Shop({
                 dayFound = true;
                 const daySessionCopy = [...scheduleOfDay];
                 arrayOfUpcomingSessionsOfaDay.push(...daySessionCopy);
+
                 break;
               }
             }
@@ -322,26 +325,42 @@ export default function Shop({
       }
       //find the minimum startH : first session
 
-      let orderTempArray = [];
+      let orderTempArrayOfStartH = [];
       if (arrayOfUpcomingSessionsOfaDay.length) {
-        orderTempArray = arrayOfUpcomingSessionsOfaDay.map((item) => item.startH);
-        orderTempArray.sort();
-        upcomingTodaySessions = orderTempArray.map(
+        orderTempArrayOfStartH = arrayOfUpcomingSessionsOfaDay.map((item) => item.startH);
+        console.log("not ordered", orderTempArrayOfStartH);
+        orderTempArrayOfStartH.sort((a, b) => {
+          if (a > b) return 1;
+          if (a < b) return -1;
+          return 0;
+        });
+        upcomingDaySessions = orderTempArrayOfStartH.map(
           (item) =>
             arrayOfUpcomingSessionsOfaDay[
               arrayOfUpcomingSessionsOfaDay.findIndex((x) => x.startH === item)
             ]
         );
 
-        //if (returnUpcomingScheduleArrayInsted) return upcomingTodaySessions;
-        let nextStartH = orderTempArray[0];
+        //if (returnUpcomingScheduleArrayInsted) return upcomingDaySessions;
+
+        // lets make the next schedule sttus true :
+        let nextStartH = orderTempArrayOfStartH[0];
+
         let scheduleToChange = getScheduleToChange(
           dayIndex,
           nextStartH,
           daysOfWeek,
           ScheduleOfEveryDayConst
         );
-        scheduleToChange.currentOrNextOne = true;
+        scheduleToChange.currentOrNextOne = true; // done
+
+        //console.log("upcoming sessions", upcomingDaySessions);
+
+        //associate the day to his schedule
+
+        setUpcomingSessions((prev) => {
+          return { ...prev, schedule: upcomingDaySessions };
+        });
       }
     }
 
@@ -423,6 +442,7 @@ export default function Shop({
     ? { backgroundColor: "#42c966", color: "white" }
     : { backgroundColor: "#424dc9", color: "white" };
 
+  console.log(upcomingSessions);
   return (
     <div>
       <h1>welcome to ooredoo {name} shop</h1>

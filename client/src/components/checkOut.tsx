@@ -1,7 +1,6 @@
-import { readdir } from "fs";
 import React, { useState, useReducer, useEffect, useContext } from "react";
 import { MdDelete } from "react-icons/md";
-import { Link, useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 
 import { ShopDataInit, daysOfWeek } from "../const/const";
 
@@ -16,8 +15,6 @@ import {
   LoggedInState,
 } from "../types/types";
 import AuthContext from "./context/authContext";
-
-const userName = "hammadi azaiez";
 
 let startCountingToRedirect: boolean = false;
 
@@ -47,6 +44,8 @@ export default function CheckOut({
   const [state, dispatch] = useReducer(reducer, initialState);
 
   const shopId = useParams().shop_id;
+
+  const newSelectorArray: scheduleCheckoutObjectType[] = generateSelector(shoppingBasket);
 
   async function getShopData(shopId: number): Promise<void> {
     try {
@@ -250,12 +249,11 @@ export default function CheckOut({
     return false;
   }
 
-  const newSelectorArray: scheduleCheckoutObjectType[] = generateSelector(shoppingBasket);
-
   function generateSelector(shoppingBasket: basketProductType[]): scheduleCheckoutObjectType[] {
     const selectorArray: scheduleCheckoutObjectType[] = [];
     if (basketCounter) {
       const { shopUpcomingSessions } = shoppingBasket[0];
+      console.log(shopUpcomingSessions);
       const { day } = shopUpcomingSessions;
       for (const schedule of shopUpcomingSessions.schedule) {
         let newItems: scheduleCheckoutObjectType[] = getArraysOf15Minutes(schedule, day);
