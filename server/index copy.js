@@ -1,14 +1,37 @@
 const express = require("express"); // return a function
 const app = express(); // run the express library
-// you explicitly create the http server
-const cors = require("cors");
-const pool = require("./db");
-const bodyParser = require("body-parser");
-const cookieParser = require("cookie-parser");
-const session = require("express-session"); // set cookie for every session
-const fs = require("fs");
+
+//const http = require("http").Server(app);
+const http = require("http");
+//const server = http.createServer(app);
+
+const { Server } = require("socket.io");
 
 const FRONT_END_LINK = "http://localhost:3000";
+
+//const io = new Server(http, {
+/* const io = new Server(server, {
+  cors: {
+    methods: ["GET", "POST"],
+    origin: [FRONT_END_LINK],
+  },
+}); */
+
+/* io.on("connection", (socket) => {
+  socket.on("hello", () => {
+    console.log("hello received");
+  });
+}); */
+
+const cors = require("cors");
+const pool = require("./db");
+
+const bodyParser = require("body-parser");
+const cookieParser = require("cookie-parser");
+
+const session = require("express-session"); // set cookie for every session
+
+const fs = require("fs");
 
 //MIDDLEWARE
 app.use(
@@ -20,42 +43,49 @@ app.use(
   })
 );
 
+//this middleware will fire for every request to the server!!
 app.use(
   session({
+    // session info
     key: "userId",
     secret: "test", //this key will sign the cookie
     resave: false, // resave : every request will have a new session
-    saveUninitialized: false,
+    // even if its from the same client / browser
+    // we dont want that
+    saveUninitialized: false, //why?
+    // if we didnt modify the session , we dont want it to save ???
+
     cookie: {
       expires: 60 * 60 * 8, //time is seconds
     },
   })
-);
+); // so now this middleware will create session key in every
+// req object ( we can use req.session in every api definition)
 
 app.use(express.json());
-const options = {
-  serveClient: true,
-  pingInterval: 10000,
-  pingTimeout: 600000,
-  cookie: false,
-  cors: {
-    origin: "*",
-    methods: ["GET", "POST"],
-    credentials: true,
-  },
-};
-const http = require("http");
-const server = http.createServer(app);
+// app.use("path0",fn)
+//for any request to "path" do the fn
+// here no path is specified so express.json() will work on all requests
+// express.json() read the req header , if type is application/json
+// it will parse it automatically !
+// so we don't need to do JSON.parse(req.body)
 
-server.listen(5000, () => {
+// anytime we want the server to start we need to listen to port number
+// so this is what keep our server running : LISTENING TO SMTH
+// else it will do the code line by line and close , just run a file
+const server = app.listen(5000, () => {});
+/* server.listen(5001, () => {
   console.log("listening on *:5000");
+  
+}); */
+
+var io = require("socket.io")(server);
+
+io.sockets.on("hello", function (socket) {
+  console.log(socket);
+  console.log("hello received");
 });
-
-// sockets
-//process.setMaxListeners(0);
-const io = require("socket.io")(server, options);
-require("./sockets/sockets.js")(io, app);
-
+// server the public folder as default /
 app.use(express.static("public"));
 
 app.use(express.json()); //automatically handle json types on api request

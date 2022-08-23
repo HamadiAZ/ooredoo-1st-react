@@ -1,7 +1,6 @@
 import React, { useState, useReducer, useEffect, useContext } from "react";
-import { MdDelete } from "react-icons/md";
 import { useNavigate, useParams } from "react-router-dom";
-
+import { io } from "socket.io-client";
 import { ShopDataInit, daysOfWeek } from "../const/const";
 
 import {
@@ -14,9 +13,8 @@ import {
   orderToDb,
   LoggedInState,
 } from "../types/types";
+import OrderTableFilled from "./checkout/orderTableFilled";
 import AuthContext from "./context/authContext";
-
-let startCountingToRedirect: boolean = false;
 
 const initialState: SelectorType = {
   inputTimeSelector: "init",
@@ -24,6 +22,10 @@ const initialState: SelectorType = {
   inputMdvSelector: "surplace",
   inputAddrSelector: "--",
 };
+let startCountingToRedirect: boolean = false;
+let startCountingToConfirm: boolean = false;
+
+const socket = io("http://localhost:5000");
 
 export default function CheckOut({
   shoppingBasket,
@@ -38,14 +40,30 @@ export default function CheckOut({
   const { loginStatus }: { loginStatus: LoggedInState; getLoginStatus: () => Promise<void> } =
     useContext(AuthContext);
 
-  const [counter, setCounter] = useState<number>(10);
+  const [countdownAfterCheckoutCounter, setCountdownAfterCheckoutCounter] = useState<number>(60);
+  const [countdownToRedirect, setCountdownToRedirect] = useState<number>(10);
   const [orderStatus, setOrderStatus] = useState<string>("not-ordered");
   const [shopData, setShopData] = useState<ShopObjectJSONType>(ShopDataInit);
   const [state, dispatch] = useReducer(reducer, initialState);
-
+  const navigate = useNavigate();
   const shopId = useParams().shop_id;
 
   const newSelectorArray: scheduleCheckoutObjectType[] = generateSelector(shoppingBasket);
+
+  let dataBody: orderToDb = {
+    shopId: parseInt(shopId || "0"),
+    userId: 1,
+    userName: loginStatus.username || "none",
+    mdp: state.inputMdpSelector,
+    mdv: state.inputMdvSelector,
+    deliveryTime: correctDBPickingUpDate(state.inputTimeSelector),
+    deliveryAddr: state.inputAddrSelector,
+    content: shoppingBasket.map((item) => {
+      let copy: any = { ...item };
+      delete copy.shopUpcomingSessions;
+      return copy;
+    }),
+  };
 
   async function getShopData(shopId: number): Promise<void> {
     try {
@@ -73,28 +91,24 @@ export default function CheckOut({
     }
   }
 
-  function handleDeleteItem(item: basketProductType): void {
-    setShoppingBasket((prev: basketProductType[]) => {
-      let newArray: basketProductType[] = [...prev];
-      newArray = newArray.filter((product) => item.name !== product.name);
-      return newArray;
-    });
-  }
-
   function correctDBPickingUpDate(inputTimeSelector: string): string {
     let todayIndex: number = new Date().getDay();
     const today = daysOfWeek[todayIndex as keyof typeof daysOfWeek];
     let timePart: string = inputTimeSelector.slice(inputTimeSelector.indexOf("|") || 3);
     let dayPart: string = inputTimeSelector.slice(0, inputTimeSelector.indexOf("|") || 3);
     if (dayPart.length > 4) {
-      console.log("yes corrected");
+      //console.log("yes corrected");
       return today + timePart;
     }
     return dayPart + timePart;
   }
 
   async function handleOrder(): Promise<void> {
-    const dataBody: orderToDb = {
+    setCountdownAfterCheckoutCounter(60);
+    setCountdownToRedirect(20);
+    setOrderStatus("waiting for admin confirmation");
+    startCountingToConfirm = true;
+    dataBody = {
       shopId: shoppingBasket[0].shopId,
       userId: 1,
       userName: loginStatus.username || "none",
@@ -108,56 +122,8 @@ export default function CheckOut({
         return copy;
       }),
     };
-
-    try {
-      const res = await fetch(globalPath + "/api/order/newOrder", {
-        method: "POST",
-        body: JSON.stringify(dataBody),
-        mode: "cors",
-        cache: "no-cache",
-        credentials: "same-origin",
-        headers: {
-          "Content-Type": "application/json",
-        },
-      });
-      const reply = await res.json();
-      //console.log(reply);
-      startCountingToRedirect = true;
-      setOrderStatus(`order id : ${reply[0].order_id} has been confirmed , delivery time : ${reply[0].delivery_time}
-      order full date: ${reply[0].created_at}`);
-      setShoppingBasket([]);
-    } catch (error) {
-      console.log(error);
-    }
-  }
-
-  function handleQuantityChange(
-    event: React.ChangeEvent<HTMLInputElement>,
-    item: basketProductType
-  ): void {
-    setShoppingBasket((prev: basketProductType[]) => {
-      let newArray: basketProductType[] = [...prev];
-      for (const product of newArray) {
-        if (product.name === item.name) {
-          product.quantity = parseInt(event.target.value);
-        }
-      }
-      return newArray;
-    });
-  }
-
-  function handleAddressInput(event: React.ChangeEvent<HTMLInputElement>): void {
-    dispatch({ type: Selector.addr, payload: event.target.value });
-  }
-
-  function handleInputTimeSelector(event: React.ChangeEvent<HTMLSelectElement>): void {
-    dispatch({ type: Selector.time, payload: event.target.value });
-  }
-  function handleInputMdvSelector(event: React.ChangeEvent<HTMLSelectElement>): void {
-    dispatch({ type: Selector.mdv, payload: event.target.value });
-  }
-  function handleInputMdpSelector(event: React.ChangeEvent<HTMLSelectElement>): void {
-    dispatch({ type: Selector.mdp, payload: event.target.value });
+    setShoppingBasket([]);
+    socket.emit("checkout-prompt", dataBody);
   }
 
   function add15Min(h: number, m: number): { h: number; m: number } {
@@ -253,7 +219,7 @@ export default function CheckOut({
     const selectorArray: scheduleCheckoutObjectType[] = [];
     if (basketCounter) {
       const { shopUpcomingSessions } = shoppingBasket[0];
-      console.log(shopUpcomingSessions);
+      //console.log(shopUpcomingSessions);
       const { day } = shopUpcomingSessions;
       for (const schedule of shopUpcomingSessions.schedule) {
         let newItems: scheduleCheckoutObjectType[] = getArraysOf15Minutes(schedule, day);
@@ -336,7 +302,51 @@ export default function CheckOut({
     return arrayOf15Minutes;
   }
 
+  async function ConfirmOrder(interval: any): Promise<void> {
+    setOrderStatus(""); // to avoid redoing this fn again ( i had double uploads to db)
+    if (interval) clearInterval(interval);
+    setCountdownAfterCheckoutCounter(-1);
+    try {
+      const res = await fetch(globalPath + "/api/order/newOrder", {
+        method: "POST",
+        body: JSON.stringify(dataBody),
+        mode: "cors",
+        cache: "no-cache",
+        credentials: "same-origin",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+      const reply = await res.json();
+      setOrderStatus(`order id : ${reply[0].order_id} has been confirmed , delivery time : ${reply[0].delivery_time}
+      order full date: ${reply[0].created_at}`);
+
+      //socket.emit("checkout", loginStatus, dataBody);
+      //socket.emit("checkoutConfirmation", loginStatus.id, shopId);
+      //socket.emit("checkout-join", parseInt(shopId || "0"), loginStatus);
+      //console.log(startCountingToConfirm);
+    } catch (error) {
+      console.log(error);
+    }
+  }
+
+  function CancelOrder(interval: any): void {
+    if (interval) clearInterval(interval);
+    setCountdownAfterCheckoutCounter(-1);
+    setOrderStatus("Order declined by admin, shop is probably busy");
+  }
+
+  function listenToAdminOrderConfirmation(): void {
+    socket.on("order-confirmation-to-user", (isAccepted: boolean, clientId) => {
+      console.log("order-confirmation from admin is :", isAccepted);
+      setOrderStatus(isAccepted ? "accepted" : "declined");
+    });
+  }
+
   useEffect(() => {
+    startCountingToRedirect = false;
+    startCountingToConfirm = false;
+
     if (shoppingBasket.length) getShopData(shoppingBasket[0].shopId);
 
     if (newSelectorArray.length) {
@@ -348,238 +358,98 @@ export default function CheckOut({
     }
   }, []);
 
-  const navigate = useNavigate();
+  useEffect(() => {
+    let interval: any;
+    if (startCountingToConfirm) {
+      interval = setInterval(() => {
+        if (countdownAfterCheckoutCounter < 1) {
+          setOrderStatus("admin didn't respond , order canceled");
+          startCountingToRedirect = true;
+        }
+        setCountdownAfterCheckoutCounter((seconds: number) => seconds - 1);
+      }, 1000);
+      listenToAdminOrderConfirmation();
+      if (orderStatus === "declined") CancelOrder(interval);
+      if (orderStatus === "accepted") ConfirmOrder(interval);
+    }
+    if (countdownAfterCheckoutCounter < 0) clearInterval(interval);
+    return () => clearInterval(interval);
+  }, [startCountingToConfirm, countdownAfterCheckoutCounter]);
+
   useEffect(() => {
     let interval: any;
     if (startCountingToRedirect) {
       interval = setInterval(() => {
-        if (counter < 1) {
+        if (countdownToRedirect < 1) {
           navigate(-1);
         }
-        if (counter < 0) {
+        if (countdownToRedirect < 0) {
           // counter -1 : backup method !
           // navigate(-1) wont work if the checkout is opened in new window/tab
           // i still need to fix this store id
           navigate(/*i need to fix this /1:storeId/ to be dynamic*/ "/1/shops/" + shopId);
         }
 
-        setCounter((seconds: number) => seconds - 1);
+        setCountdownToRedirect((seconds: number) => seconds - 1);
       }, 1000);
     }
     return () => clearInterval(interval);
-  }, [startCountingToRedirect, counter]);
+  }, [startCountingToRedirect, countdownToRedirect, countdownAfterCheckoutCounter < 1]);
 
   return (
     <main id="checkout-main-root-container">
-      {/* login 
-      card has items => if logged => [can view] ELSE [prompt logging page and hide checkout]
-      card empty => if ordered already => [view confirmation] ELSE  [INIT VALUE : <h1>empty card </h1>]
-      */}
-      {basketCounter > 0 ? (
-        loginStatus.isLoggedIn ? (
-          <table>
-            <thead>
-              <tr style={{ fontWeight: "bold" }}>
-                <td>name</td>
-                <td>category</td>
-                <td style={{ width: "8rem" }}>marque</td>
-                <td>quantity</td>
-                <td>price</td>
-                <td>total</td>
-                <td>delete</td>
-              </tr>
-            </thead>
-            <tbody>
-              {shoppingBasket.map((item: basketProductType) => {
-                return (
-                  <tr key={item.name}>
-                    <td>{item.name}</td>
-                    <td>{item.category}</td>
-                    <td>{item.manufacture}</td>
-                    <td>
-                      <input
-                        type="number"
-                        value={item.quantity}
-                        onChange={(event) => handleQuantityChange(event, item)}
-                      ></input>
-                    </td>
-                    <td>{item.price}</td>
-                    <td style={{ fontWeight: "bold" }}>{item.quantity * item.price}</td>
-                    <td>
-                      <MdDelete
-                        onClick={() => handleDeleteItem(item)}
-                        className="basket-delete-icon"
-                      />
-                    </td>
-                  </tr>
-                );
-              })}
-              <tr>
-                <td>
-                  <hr />
-                </td>
-                <td>
-                  <hr />
-                </td>
-                <td>
-                  <hr />
-                </td>
-                <td>
-                  <hr />
-                </td>
-              </tr>
-            </tbody>
-
-            <tfoot>
-              <tr style={{ fontWeight: "bold" }}>
-                <td></td>
-                <td></td>
-                <td>TOTAL </td>
-                <td>
-                  {shoppingBasket.reduce(
-                    (accumulator: number, value: basketProductType) =>
-                      accumulator + value.quantity * value.price,
-                    0
-                  )}
-                </td>
-                <td>
-                  <p>select picking time :</p>
-                </td>
-                <td>
-                  <select
-                    name="select"
-                    value={state[Selector.time]}
-                    onChange={handleInputTimeSelector}
-                  >
-                    {newSelectorArray.map((item: scheduleCheckoutObjectType) => {
-                      return (
-                        <option
-                          key={item.hours + ":" + item.minutes}
-                          value={item.hours + ":" + item.minutes}
-                        >
-                          {item.day + " | " + item.hours + ":" + item.minutes}
-                        </option>
-                      );
-                    })}
-                  </select>
-                </td>
-              </tr>
-              <tr style={{ fontWeight: "bold" }}>
-                <td></td>
-                <td></td>
-                <td></td>
-                <td></td>
-                <td>
-                  <p>select payment method :</p>
-                </td>
-                <td>
-                  <select
-                    name="select"
-                    value={state[Selector.mdp]}
-                    onChange={handleInputMdpSelector}
-                  >
-                    {Object.keys(shopData.mdp).map((item: string) => {
-                      if (shopData.mdp[item as keyof typeof shopData.mdp] === true) {
-                        return (
-                          <option key={item} value={item}>
-                            {item}
-                          </option>
-                        );
-                      }
-                    })}
-                  </select>
-                </td>
-              </tr>
-              <tr style={{ fontWeight: "bold" }}>
-                <td></td>
-                <td></td>
-                <td></td>
-                <td></td>
-                <td>
-                  <p>select picking method :</p>
-                </td>
-                <td>
-                  <select
-                    name="select"
-                    value={state[Selector.mdv]}
-                    onChange={handleInputMdvSelector}
-                  >
-                    {Object.keys(shopData.mdv).map((item: string) => {
-                      if (shopData.mdv[item as keyof typeof shopData.mdv] === true) {
-                        return (
-                          <option key={item} value={item}>
-                            {item}
-                          </option>
-                        );
-                      }
-                    })}
-                  </select>
-                </td>
-              </tr>
-              {state.inputMdvSelector == "delivery" && (
-                <tr style={{ fontWeight: "bold" }}>
-                  <td></td>
-                  <td></td>
-                  <td>
-                    <p>write your address :</p>
-                  </td>
-                  <td colSpan={3}>
-                    <input
-                      id="checkout-delivery-address-input"
-                      name="input"
-                      value={state[Selector.addr]}
-                      onChange={handleAddressInput}
-                    ></input>
-                  </td>
-                  <td></td>
-                </tr>
-              )}
-
-              <tr>
-                <td></td>
-                <td></td>
-                <td></td>
-                <td></td>
-                <td></td>
-                <td></td>
-                <td>
-                  {basketCounter > 0 ? (
-                    <div className="btn btn-small buy" onClick={handleOrder}>
-                      Order
-                    </div>
-                  ) : (
-                    <div className="btn btn-small warning">Checkout</div>
-                  )}
-                </td>
-              </tr>
-            </tfoot>
-          </table>
-        ) : (
-          <h1>Please Login or Register from the Menu on top right</h1>
-        )
-      ) : (
-        <>
-          {orderStatus === "not-ordered" ? (
-            <h1>empty card</h1>
-          ) : (
-            <div>
-              <h3>{orderStatus}</h3>
-              <p onClick={() => navigate(-1)} className="link">
-                you will go back to shop in {counter}
-              </p>
-
-              <p
-                onClick={() =>
-                  navigate(/*i need to fix this /1:storeId/ to be dynamic*/ "/1/shops/" + shopId)
-                }
-                className="link"
-              >
-                Or Click Here!
-              </p>
-            </div>
-          )}
-        </>
-      )}
+      {basketCounter > 0 && <IfLoggedINRender />}
+      {basketCounter <= 0 && orderStatus === "not-ordered" && <h1>empty card</h1>}
+      <OrderFilled />
     </main>
   );
+  function OrderFilled(): JSX.Element {
+    if (basketCounter <= 0 && orderStatus == "not-ordered") return <></>; // nothing
+    if (countdownAfterCheckoutCounter < 1) return <RedirectingAfterCountdown />;
+    else
+      return (
+        <div>
+          <h1>waiting for admin confirmation</h1>
+          <h3>otherwise,order will be canceled in {countdownAfterCheckoutCounter}</h3>
+          <h3>don't close this page or order will be canceled</h3>
+        </div>
+      );
+  }
+
+  function RedirectingAfterCountdown(): JSX.Element {
+    return (
+      <div>
+        <h3>{orderStatus}</h3>
+        <p onClick={() => navigate(-1)} className="link">
+          you will go back to shop in {countdownToRedirect}
+        </p>
+
+        <p
+          onClick={() =>
+            navigate(/*i need to fix this /1:storeId/ to be dynamic*/ "/1/shops/" + shopId)
+          }
+          className="link"
+        >
+          Or Click Here!
+        </p>
+      </div>
+    );
+  }
+
+  function IfLoggedINRender(): JSX.Element {
+    return loginStatus.isLoggedIn ? (
+      <OrderTableFilled
+        setShoppingBasket={setShoppingBasket}
+        dispatch={dispatch}
+        newSelectorArray={newSelectorArray}
+        state={state}
+        shopData={shopData}
+        basketCounter={basketCounter}
+        handleOrder={handleOrder}
+        shoppingBasket={shoppingBasket}
+      />
+    ) : (
+      <h1>Please Login or Register from the Menu on top right</h1>
+    );
+  }
 }

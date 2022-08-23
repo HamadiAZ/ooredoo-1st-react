@@ -22,8 +22,8 @@ const globalPath = "http://localhost:5000";
 export default function App(): JSX.Element {
   // getting data from local storage
   const [shoppingBasket, setShoppingBasket] = useState<basketProductType[]>(() => {
-    const saved = localStorage.getItem("shoppingBasket") || "";
-    const initialValue = JSON.parse(saved);
+    const savedAlready = localStorage.getItem("shoppingBasket") || `[]`;
+    const initialValue = JSON.parse(savedAlready);
     return initialValue || [];
   });
 

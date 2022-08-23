@@ -61,18 +61,19 @@ router.get("/loginStatus", async (req, res) => {
       const verified = jwt.verify(token, JWTpassword);
       const isAdmin = false;
 
-      console.log(verified);
+      // console.log(verified);
       let id = verified.userId;
       const user = await pool.query(`
             SELECT * from users where "id"='${id}';
             `);
       const privilege = user.rows[0].privilege;
+
       const name = user.rows[0].name;
       const username = user.rows[0].username;
       if (privilege === "admin")
         res
           .status(200)
-          .send({ isLoggedIn: true, privilege: "admin", name: name, username: username });
+          .send({ isLoggedIn: true, privilege: "admin", name: name, username: username, id });
       else
         res
           .status(200)

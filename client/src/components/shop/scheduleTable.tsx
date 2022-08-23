@@ -19,7 +19,7 @@ function ScheduleTable({
     san: [],
   };
   for (const [key, value] of Object.entries(scheduleOfEveryDay)) {
-    console.log(key, value);
+    //console.log(key, value);
     let isIt24HoursSession = false;
     let thisDayContainTheActiveSession = false;
     for (const schedule of value) {
@@ -44,7 +44,7 @@ function ScheduleTable({
     }
   }
 
-  console.log(modifiedSchedule);
+  //console.log(modifiedSchedule);
   return (
     <div className="shop-div-schedule-root-container">
       {Object.keys(modifiedSchedule).map((dayKey) => {

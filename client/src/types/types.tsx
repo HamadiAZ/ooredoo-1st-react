@@ -193,6 +193,7 @@ export enum authenticationStateENUM {
 }
 
 export type LoggedInState = {
+  id: number;
   isLoggedIn: boolean;
   privilege: string;
   name: string;

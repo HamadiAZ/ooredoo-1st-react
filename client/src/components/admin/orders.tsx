@@ -13,7 +13,7 @@ export default function Orders({ globalPath }: { globalPath: string }) {
 
   async function getOrders(): Promise<void> {
     try {
-      let res = await fetch(globalPath + "/api/admin/getOrders/", {
+      let res = await fetch(globalPath + "/api/admin/getOrders", {
         credentials: "include",
         headers: {
           Accept: "application/json",
@@ -21,6 +21,7 @@ export default function Orders({ globalPath }: { globalPath: string }) {
         },
       });
       let data: orderFromDb[] = await res.json();
+      //console.log(data);
       setOrders(data);
     } catch (error) {
       console.error(error);
