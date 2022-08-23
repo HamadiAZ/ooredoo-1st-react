@@ -43,6 +43,7 @@ export default function CheckOut({
   const [countdownAfterCheckoutCounter, setCountdownAfterCheckoutCounter] = useState<number>(60);
   const [countdownToRedirect, setCountdownToRedirect] = useState<number>(10);
   const [orderStatus, setOrderStatus] = useState<string>("not-ordered");
+  const [adminsOnline, setAdminsOnline] = useState<any[]>([]);
   const [shopData, setShopData] = useState<ShopObjectJSONType>(ShopDataInit);
   const [state, dispatch] = useReducer(reducer, initialState);
   const navigate = useNavigate();
@@ -320,11 +321,6 @@ export default function CheckOut({
       const reply = await res.json();
       setOrderStatus(`order id : ${reply[0].order_id} has been confirmed , delivery time : ${reply[0].delivery_time}
       order full date: ${reply[0].created_at}`);
-
-      //socket.emit("checkout", loginStatus, dataBody);
-      //socket.emit("checkoutConfirmation", loginStatus.id, shopId);
-      //socket.emit("checkout-join", parseInt(shopId || "0"), loginStatus);
-      //console.log(startCountingToConfirm);
     } catch (error) {
       console.log(error);
     }
@@ -336,21 +332,37 @@ export default function CheckOut({
     setOrderStatus("Order declined by admin, shop is probably busy");
   }
 
-  function listenToAdminOrderConfirmation(): void {
+  async function listenToAdminOrderConfirmation(): Promise<void> {
+    socket.on("admins-availability", (onlineAdmins: string[], orderData) => {
+      console.log("admins-availability :", onlineAdmins);
+      setAdminsOnline(onlineAdmins);
+      if (!onlineAdmins.length) {
+        CancelOrder(0);
+        setOrderStatus("Sorry , no admin is online to handle your Order");
+        startCountingToRedirect = true;
+      }
+    });
+
     socket.on("order-confirmation-to-user", (isAccepted: boolean, clientId) => {
-      console.log("order-confirmation from admin is :", isAccepted);
       setOrderStatus(isAccepted ? "accepted" : "declined");
     });
+  }
+
+  function CancelOrderAfterConfirmation(): void {
+    //CancelOrder(0);
+    //socket.emit("cancel-order-after-confirmation");
+    console.log(dataBody);
   }
 
   useEffect(() => {
     startCountingToRedirect = false;
     startCountingToConfirm = false;
 
-    if (shoppingBasket.length) getShopData(shoppingBasket[0].shopId);
+    shoppingBasket.length && getShopData(shoppingBasket[0].shopId);
 
     if (newSelectorArray.length) {
       let arr = newSelectorArray;
+      // just to make the next payload line clear
       dispatch({
         type: Selector.time,
         payload: `${arr[0].day} | ${arr[0].hours} : ${arr[0].minutes}`,
@@ -363,6 +375,8 @@ export default function CheckOut({
     if (startCountingToConfirm) {
       interval = setInterval(() => {
         if (countdownAfterCheckoutCounter < 1) {
+          //timeout waiting for admin response
+          setCountdownToRedirect(10); // less redirect waiting time
           setOrderStatus("admin didn't respond , order canceled");
           startCountingToRedirect = true;
         }
@@ -372,6 +386,7 @@ export default function CheckOut({
       if (orderStatus === "declined") CancelOrder(interval);
       if (orderStatus === "accepted") ConfirmOrder(interval);
     }
+
     if (countdownAfterCheckoutCounter < 0) clearInterval(interval);
     return () => clearInterval(interval);
   }, [startCountingToConfirm, countdownAfterCheckoutCounter]);
@@ -404,16 +419,16 @@ export default function CheckOut({
     </main>
   );
   function OrderFilled(): JSX.Element {
-    if (basketCounter <= 0 && orderStatus == "not-ordered") return <></>; // nothing
+    if (orderStatus == "not-ordered") return <></>; // nothing
     if (countdownAfterCheckoutCounter < 1) return <RedirectingAfterCountdown />;
-    else
-      return (
-        <div>
-          <h1>waiting for admin confirmation</h1>
-          <h3>otherwise,order will be canceled in {countdownAfterCheckoutCounter}</h3>
-          <h3>don't close this page or order will be canceled</h3>
-        </div>
-      );
+    return (
+      <div>
+        <h1>waiting for admin confirmation</h1>
+        <h3>otherwise,order will be canceled in {countdownAfterCheckoutCounter}</h3>
+        <h3>don't close this page or order will be canceled</h3>
+        <button onClick={CancelOrderAfterConfirmation}>cancel order</button>
+      </div>
+    );
   }
 
   function RedirectingAfterCountdown(): JSX.Element {

@@ -51,17 +51,16 @@ module.exports = async function (io) {
       console.log("user joined room " + shopId);
     });
 
-    socket.on("checkout-join", (shopId, loginStatus) => {
-      socket.join(shopId);
-      console.log("user joined room " + shopId);
-    });
-
     socket.on("checkout-prompt", (data) => {
       socket.join(parseInt(data.shopId));
+      // admins online
       onlineAdmins.forEach((adminId) => {
         socket.to(adminId).emit("new-order", adminId, socket.id, data);
       });
+      //response of admins availability
+      socket.emit("admins-availability", onlineAdmins, data);
     });
+
     socket.on("order-confirmation", (isConfirmed, clientId) => {
       socket.to(clientId).emit("order-confirmation-to-user", isConfirmed);
     });

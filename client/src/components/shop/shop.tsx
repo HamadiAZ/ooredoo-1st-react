@@ -491,8 +491,8 @@ export default function Shop({
     getShopData();
 
     socket.on("new-order", (adminId, socketId, data) => {
-      console.log(" new order");
-      console.log(adminId, socketId, data);
+      //console.log(" new order");
+      //console.log(adminId, socketId, data);
       togglePrompt(socketId, data);
     });
   }, []);
@@ -512,7 +512,6 @@ export default function Shop({
     return () => clearInterval(interval);
   }, [startPromptCountDown, promptCountDown]);
 
-  console.log(startPromptCountDown, promptCountDown);
   return (
     <div>
       {showOrderConfirmationPrompt && <AdminOrderConfirmationPrompt />}
@@ -533,16 +532,14 @@ export default function Shop({
       <ProductMenu handleAddToCard={handleAddToCard} />
       <div className="shop-div-double-items-flex-container">
         {
-          <>
-            {/* <iframe
+          <iframe
             id="gmap_canvas"
             src={`https://maps.google.com/maps?q=${lat},${long}&t=&z=13&ie=UTF8&iwloc=&output=embed`}
             frameBorder={0}
             scrolling="no"
             marginHeight={0}
             marginWidth={0}
-          /> */}
-          </>
+          />
         }
 
         <div className="div-card-text">
@@ -598,7 +595,7 @@ export default function Shop({
           </button>
         </div>
         <div>
-          <h2>{orderStatus != "not-ordered" && orderStatus}</h2>
+          <h2 style={{ margin: "0 auto" }}>{orderStatus != "not-ordered" && orderStatus}</h2>
         </div>
       </div>
     );

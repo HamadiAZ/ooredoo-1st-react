@@ -89,8 +89,8 @@ a {
 }
 
 .payment-methods-icons {
-  width: 2.3vmax;
-  height: 2.3vmax;
+  width: 2.6rem;
+  height: 2.6rem;
   border-radius: 20px;
   background-color: rgb(255, 0, 0);
   color: rgb(254, 215, 215);
