@@ -13,7 +13,6 @@ import {
   basketProductType,
   daysOfWeekType,
   LoggedInState,
-  orderToDb,
 } from "../../types/types";
 
 import { daysOfWeek, ShopDataInit, products } from "../../const/const";
@@ -21,6 +20,7 @@ import { daysOfWeek, ShopDataInit, products } from "../../const/const";
 import "../../styles/shop.css";
 import PaymentMethods from "./paymentMethods";
 import AuthContext from "../context/authContext";
+import OrderPromptManager from "./orderPrompt/orderPromptManager";
 
 const initialState = {
   mon: [],
@@ -32,7 +32,6 @@ const initialState = {
   san: [],
 };
 const socket = io("localhost:5000");
-let startPromptCountDown: boolean = false;
 
 export default function Shop({
   globalPath,
@@ -53,11 +52,6 @@ export default function Shop({
   }>({ day: "", schedule: [] });
 
   const [shopData, setShopData] = useState<ShopObjectJSONType>(ShopDataInit);
-  const [showOrderConfirmationPrompt, setShowOrderConfirmationPrompt] = useState<boolean>(false);
-  const [promptCountDown, setPromptCountDown] = useState<number>(57);
-  const [orderStatus, setOrderStatus] = useState<string>("not-ordered");
-  const [lastClientOrderedId, setLastClientOrderedId] = useState<string>("");
-  const [orderConfirmationPromptData, setOrderConfirmationPromptData] = useState<orderToDb>();
 
   const { loginStatus }: { loginStatus: LoggedInState; getLoginStatus: () => Promise<void> } =
     useContext(AuthContext);
@@ -449,33 +443,6 @@ export default function Shop({
     return false;
   }
 
-  function togglePrompt(clientId: string, data: orderToDb) {
-    setLastClientOrderedId(clientId);
-    setShowOrderConfirmationPrompt(true);
-    setOrderConfirmationPromptData(data);
-    startPromptCountDown = true;
-  }
-
-  function handleDeclineOrder(): void {
-    setPromptCountDown(57);
-    startPromptCountDown = false;
-    socket.emit("order-confirmation", false, lastClientOrderedId);
-    setOrderStatus("declined");
-    setTimeout(() => {
-      setShowOrderConfirmationPrompt(false);
-      setOrderStatus("not-ordered");
-    }, 4000);
-  }
-  function handleAcceptOrder(): void {
-    setPromptCountDown(57);
-    startPromptCountDown = false;
-    socket.emit("order-confirmation", true, lastClientOrderedId);
-    setOrderStatus("accepted");
-    setTimeout(() => {
-      setShowOrderConfirmationPrompt(false);
-      setOrderStatus("not-ordered");
-    }, 4000);
-  }
   const scheduleOfEveryDay = useMemo(() => getScheduleOfShop(), [shopData]);
 
   //socket
@@ -489,32 +456,12 @@ export default function Shop({
 
   useEffect(() => {
     getShopData();
-
-    socket.on("new-order", (adminId, socketId, data) => {
-      //console.log(" new order");
-      //console.log(adminId, socketId, data);
-      togglePrompt(socketId, data);
-    });
   }, []);
-
-  useEffect(() => {
-    let interval: any;
-    if (startPromptCountDown) {
-      interval = setInterval(() => {
-        setPromptCountDown((seconds: number) => seconds - 1);
-      }, 1000);
-
-      if (promptCountDown < 0 && orderStatus !== "accepted") {
-        clearInterval(interval);
-        handleDeclineOrder();
-      }
-    }
-    return () => clearInterval(interval);
-  }, [startPromptCountDown, promptCountDown]);
 
   return (
     <div>
-      {showOrderConfirmationPrompt && <AdminOrderConfirmationPrompt />}
+      <OrderPromptManager socket={socket} />
+
       <h1>welcome to ooredoo {name} shop</h1>
       <p>
         {"our shop is now "}
@@ -557,47 +504,4 @@ export default function Shop({
       </div>
     </div>
   );
-  function AdminOrderConfirmationPrompt(): JSX.Element {
-    return (
-      <div id="shop-admin-order-confirmation-prompt">
-        <h4 style={{ margin: "0.2rem auto" }}>New Order</h4>
-        <hr style={{ width: "99.5%" }} />
-        <table style={{ margin: "0.5rem 0" }}>
-          <thead>
-            <tr>
-              <td>pickup date</td>
-              <td>user name</td>
-              <td>details</td>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td>{orderConfirmationPromptData?.deliveryTime}</td>
-              <td>{orderConfirmationPromptData?.userName}</td>
-              <td>
-                <button className="btn btn-small" style={{ margin: "0 auto" }}>
-                  view
-                </button>
-              </td>
-            </tr>
-          </tbody>
-        </table>
-        <div className="prompt-two-buttons-container">
-          <button
-            className="btn btn-small"
-            onClick={handleDeclineOrder}
-            style={{ width: "fit-content" }}
-          >
-            decline {orderStatus === "not-ordered" && "(" + promptCountDown + ")"}
-          </button>
-          <button className="btn btn-small buy" onClick={handleAcceptOrder}>
-            accept
-          </button>
-        </div>
-        <div>
-          <h2 style={{ margin: "0 auto" }}>{orderStatus != "not-ordered" && orderStatus}</h2>
-        </div>
-      </div>
-    );
-  }
 }
