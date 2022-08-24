@@ -1,31 +1,51 @@
-import React, { useEffect, useState } from "react";
-import { v4 as uuid } from "uuid";
+import { useEffect, useState } from "react";
 
 import { orderToDb } from "../../../types/types";
 import SinglePromptManager from "./singlePromptManager";
 
 export default function AllOrdersPromptManager({ socket }: any) {
+  //
+  const [promptArrayState, setPromptArrayState] = useState<JSX.Element[]>([]);
+
   function handleHidePrompt(orderId: string): void {
     setPromptArrayState((prev) => {
       return prev.filter((singlePrompt) => singlePrompt.key != orderId);
     });
   }
 
-  const [promptArrayState, setPromptArrayState] = useState<JSX.Element[]>([]);
   useEffect(() => {
-    socket.on("new-order", (adminId: string, socketId: string, data: orderToDb) => {
-      const newOrderId = uuid();
-      setPromptArrayState((prev) => [
-        ...prev,
-        <SinglePromptManager
-          key={newOrderId}
-          orderId={newOrderId}
-          socket={socket}
-          socketId={socketId}
-          data={data}
-          handleHidePrompt={handleHidePrompt}
-        />,
-      ]);
+    socket.on(
+      "new-order-to-shop-admins",
+      (adminId: string, socketId: string, data: orderToDb, orderId: string) => {
+        setPromptArrayState((prev) => [
+          ...prev,
+          <SinglePromptManager
+            key={orderId}
+            orderId={orderId}
+            socket={socket}
+            socketId={socketId}
+            data={data}
+            handleHidePrompt={handleHidePrompt}
+          />,
+        ]);
+      }
+    );
+
+    socket.on("cancel-pending-order-admin", (orderId: string, clientId: string) => {
+      //console.log("cancel-pending-order-admin", orderId);
+      setPromptArrayState((prev) => {
+        const prevArrayLength = prev.length;
+
+        const newFiltered = prev.filter((prompt) => prompt.key != orderId);
+
+        if (newFiltered.length < prevArrayLength) {
+          // order canceled on admin side!
+
+          socket.emit("pending-order-canceling-confirmation", orderId, clientId);
+        }
+
+        return newFiltered;
+      });
     });
   }, []);
   if (promptArrayState.length > 0)

@@ -1,7 +1,7 @@
 import React, { useState, useReducer, useEffect, useContext } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { io } from "socket.io-client";
-import { ShopDataInit, daysOfWeek } from "../const/const";
+import { ShopDataInit, daysOfWeek } from "../../const/const";
 
 import {
   SelectorType,
@@ -12,9 +12,9 @@ import {
   ShopObjectJSONType,
   orderToDb,
   LoggedInState,
-} from "../types/types";
-import OrderTableFilled from "./checkout/orderTableFilled";
-import AuthContext from "./context/authContext";
+} from "../../types/types";
+import OrderTableFilled from "./orderTableFilled";
+import AuthContext from "../context/authContext";
 
 const initialState: SelectorType = {
   inputTimeSelector: "init",
@@ -37,18 +37,19 @@ export default function CheckOut({
   setShoppingBasket: React.Dispatch<React.SetStateAction<basketProductType[]>>;
 }) {
   const basketCounter = shoppingBasket?.length || 0;
+
   const { loginStatus }: { loginStatus: LoggedInState; getLoginStatus: () => Promise<void> } =
     useContext(AuthContext);
 
   const [countdownAfterCheckoutCounter, setCountdownAfterCheckoutCounter] = useState<number>(60);
   const [countdownToRedirect, setCountdownToRedirect] = useState<number>(10);
   const [orderStatus, setOrderStatus] = useState<string>("not-ordered");
-  const [adminsOnline, setAdminsOnline] = useState<any[]>([]);
   const [shopData, setShopData] = useState<ShopObjectJSONType>(ShopDataInit);
   const [state, dispatch] = useReducer(reducer, initialState);
+  const [orderId, setOrderId] = useState<string>("");
+
   const navigate = useNavigate();
   const shopId = useParams().shop_id;
-
   const newSelectorArray: scheduleCheckoutObjectType[] = generateSelector(shoppingBasket);
 
   let dataBody: orderToDb = {
@@ -333,10 +334,11 @@ export default function CheckOut({
   }
 
   async function listenToAdminOrderConfirmation(): Promise<void> {
-    socket.on("admins-availability", (onlineAdmins: string[], orderData) => {
-      console.log("admins-availability :", onlineAdmins);
-      setAdminsOnline(onlineAdmins);
-      if (!onlineAdmins.length) {
+    socket.on("admins-availability", (onlineAdmins: string[], orderId: string) => {
+      //console.log("admins-availability :", onlineAdmins);
+      if (onlineAdmins.length) {
+        setOrderId(orderId);
+      } else {
         CancelOrder(0);
         setOrderStatus("Sorry , no admin is online to handle your Order");
         startCountingToRedirect = true;
@@ -349,9 +351,7 @@ export default function CheckOut({
   }
 
   function CancelOrderAfterConfirmation(): void {
-    //CancelOrder(0);
-    //socket.emit("cancel-order-after-confirmation");
-    console.log(dataBody);
+    socket.emit("cancel-order-after-sent", orderId, shopId);
   }
 
   useEffect(() => {
@@ -369,6 +369,17 @@ export default function CheckOut({
       });
     }
   }, []);
+  console.log(orderStatus);
+  socket.on("pending-order-canceling-confirmation-to-checkout", (canceledOrderId: string) => {
+    console.log("compare", orderId, canceledOrderId);
+    console.log("to ", canceledOrderId);
+    if (orderId == canceledOrderId) {
+      console.log("canceled");
+      CancelOrder(0);
+      setOrderStatus("order canceled successfully by your request");
+      startCountingToRedirect = true;
+    }
+  });
 
   useEffect(() => {
     let interval: any;

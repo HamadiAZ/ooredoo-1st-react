@@ -1,6 +1,6 @@
 import React from "react";
 import { MdDelete } from "react-icons/md";
-import { JsxChild } from "typescript";
+
 import { basketProductType, scheduleCheckoutObjectType, Selector } from "../../types/types";
 
 export default function ({

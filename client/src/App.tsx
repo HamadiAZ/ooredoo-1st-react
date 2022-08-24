@@ -9,7 +9,7 @@ import Footer from "./components/Footer";
 import AddShop from "./components/admin/addShop";
 import Admin from "./components/admin/admin";
 import Shop from "./components/shop/shop";
-import CheckOut from "./components/checkOut";
+import CheckOut from "./components/checkout/checkOut";
 import Orders from "./components/admin/orders";
 import AuthContext from "./components/context/authContext";
 

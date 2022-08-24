@@ -1,4 +1,5 @@
 const pool = require("../db");
+const { v4: uuid } = require("uuid");
 async function getAdminsId() {
   try {
     data = await pool.query(`select "id" from users where "privilege"='admin'`);
@@ -51,64 +52,35 @@ module.exports = async function (io) {
 
     socket.on("checkout-prompt-from-client", (data) => {
       const { shopId } = data;
+      orderId = uuid();
       // admins online
       onlineAdmins.forEach((adminInfo) => {
         if (shopId == adminInfo[1])
-          socket.to(adminInfo[0]).emit("new-order", adminInfo[0], socket.id, data);
+          socket
+            .to(adminInfo[0])
+            .emit("new-order-to-shop-admins", adminInfo[0], socket.id, data, orderId);
       });
-      console.log(onlineAdmins);
       //response of admins availability
       // if front i will check if onlineAdmins of this shop=[] then no admin is online
       const onlineAdminsOfRequestedShop = onlineAdmins.filter((item) => item[1] == shopId);
       console.log("requested admins array", onlineAdminsOfRequestedShop);
-      socket.emit("admins-availability", onlineAdminsOfRequestedShop, data);
+      socket.emit("admins-availability", onlineAdminsOfRequestedShop, orderId);
     });
 
     socket.on("order-confirmation", (isConfirmed, clientId) => {
       socket.to(clientId).emit("order-confirmation-to-user", isConfirmed);
     });
 
-    // disabled for now
+    socket.on("cancel-order-after-sent", (orderId, shopId) => {
+      console.log("cancel : ", orderId);
+      onlineAdmins.forEach((adminInfo) => {
+        if (shopId == adminInfo[1])
+          socket.to(adminInfo[0]).emit("cancel-pending-order-admin", orderId, socket.id);
+      });
+    });
 
-    /* socket.on("checkout-join", (shopId, loginStatus) => {
-      socket.join(shopId);
-      console.log("user joined room " + shopId);
-    }); */
-    //checkoutConfirmation(socket, onlineAdmins, io);
+    socket.on("pending-order-canceling-confirmation", (orderId, clientId) => {
+      socket.to(clientId).emit("pending-order-canceling-confirmation-to-checkout", orderId);
+    });
   });
 };
-
-/* loginStatus = {
-        id: 36,
-        isLoggedIn: true,
-        privilege: 'admin',
-        name: 'admin',
-        username: 'admin'
-      } */
-//console.log(loginStatus);
-function checkoutConfirmation(socket, onlineAdmins, io) {
-  socket.on("checkoutConfirmation", (userId, shopId) => {
-    //const destinationUserId = onlineUsers.get(data.to);
-    const adminsSocketsIdsOfCurrentShop = [];
-    onlineAdmins.forEach((value, key) => {
-      if (value[1] == shopId) {
-        adminsSocketsIdsOfCurrentShop.push(value[0]);
-      }
-    });
-    //console.log(adminsSocketsIdsOfCurrentShop);
-    //socket.emit("checkoutConfirmation", loginStatus.id, shopId);
-    if (!adminsSocketsIdsOfCurrentShop.length) {
-      console.log("no admin online in this shop now");
-      //auto add to db
-      return;
-    }
-    // there are some online admins
-    //socket.join(shopId * 10000 + userId); // so every room will be unique
-    //add admins
-    //adminsSocketsIdsOfCurrentShop;
-
-    console.log(adminsSocketsIdsOfCurrentShop[0]);
-    //socket.to(anotherSocketId).emit("private message", socket.id, msg);
-    socket.to(adminsSocketsIdsOfCurrentShop[0]).emit("msg", socket.id, "hahahah");
-  });
-}
