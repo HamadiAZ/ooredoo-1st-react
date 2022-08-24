@@ -15,12 +15,7 @@ export default function Prompt({
       };
     });
   }
-  console.log(
-    promptState.order.content.reduce(
-      (accumulator: number, value: any) => accumulator + value.quantity * value.price,
-      0
-    )
-  );
+  console.log(promptState.order);
   return (
     <div id="prompt-root-container" onClick={closePrompt}>
       <div id="admin-order-prompt-content-container" onClick={(event) => event.stopPropagation()}>

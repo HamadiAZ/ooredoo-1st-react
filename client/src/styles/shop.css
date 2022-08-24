@@ -1,6 +1,24 @@
 html {
   scroll-behavior: smooth;
 }
+
+.shop-warning-auto-accepted-orders-container {
+  box-sizing: border-box;
+  max-width: 70rem;
+  min-width: 15rem;
+  height: fit-content;
+  background-color: rgb(252, 213, 213);
+  margin: 1rem auto 0 auto;
+  padding: 0.5rem 0;
+  border-radius: 8px;
+  box-shadow: 0 0 2px rgba(0, 0, 0, 0.1);
+  border: solid 2px rgb(237, 0, 0);
+}
+.shop-warning-auto-accepted-orders-container p {
+  margin: 0.5rem 0;
+  font-size: 1.1rem;
+  font-weight: bold;
+}
 .shop-div-schedule-root-container {
   display: grid;
   grid-template-rows: 1fr;

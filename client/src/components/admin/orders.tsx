@@ -21,7 +21,8 @@ export default function Orders({ globalPath }: { globalPath: string }) {
         },
       });
       let data: orderFromDb[] = await res.json();
-      //console.log(data);
+      console.log(data);
+
       setOrders(data);
     } catch (error) {
       console.error(error);

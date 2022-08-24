@@ -4,12 +4,14 @@ import AdminOrderConfirmationPrompt from "./adminOrderConfirmationPrompt";
 let startPromptCountDown: boolean = false;
 
 export default function SinglePromptManager({
+  shopId,
   socket,
   socketId,
   data,
   orderId,
   handleHidePrompt,
 }: {
+  shopId: number;
   socket: any;
   socketId: string;
   data: orderToDb;
@@ -35,7 +37,7 @@ export default function SinglePromptManager({
 
     setPromptCountDown(57);
     startPromptCountDown = false;
-    socket.emit("order-confirmation", false, clientId);
+    socket.emit("order-confirmation", false, clientId, orderId, shopId);
     setOrderStatus("declined");
     setTimeout(() => {
       handleHidePrompt(orderId);

@@ -24,6 +24,8 @@ const initialState: SelectorType = {
 };
 let startCountingToRedirect: boolean = false;
 let startCountingToConfirm: boolean = false;
+let orderContentToDb: any;
+let OfflineOrder: boolean = false;
 
 const socket = io("http://localhost:5000");
 
@@ -124,6 +126,8 @@ export default function CheckOut({
         return copy;
       }),
     };
+    orderContentToDb = dataBody;
+    console.log("when ordering", dataBody);
     setShoppingBasket([]);
     socket.emit("checkout-prompt-from-client", dataBody);
   }
@@ -303,15 +307,25 @@ export default function CheckOut({
     }
     return arrayOf15Minutes;
   }
-
+  console.log(dataBody);
   async function ConfirmOrder(interval: any): Promise<void> {
     setOrderStatus(""); // to avoid redoing this fn again ( i had double uploads to db)
     if (interval) clearInterval(interval);
     setCountdownAfterCheckoutCounter(-1);
+    await sendOrderToDb();
+  }
+
+  function CancelOrder(interval: any): void {
+    if (interval) clearInterval(interval);
+    setCountdownAfterCheckoutCounter(-1);
+    setOrderStatus("Order declined by admin, shop is probably busy");
+  }
+
+  async function sendOrderToDb() {
     try {
       const res = await fetch(globalPath + "/api/order/newOrder", {
         method: "POST",
-        body: JSON.stringify(dataBody),
+        body: JSON.stringify(orderContentToDb),
         mode: "cors",
         cache: "no-cache",
         credentials: "same-origin",
@@ -327,23 +341,21 @@ export default function CheckOut({
     }
   }
 
-  function CancelOrder(interval: any): void {
-    if (interval) clearInterval(interval);
-    setCountdownAfterCheckoutCounter(-1);
-    setOrderStatus("Order declined by admin, shop is probably busy");
-  }
-
   async function listenToAdminOrderConfirmation(): Promise<void> {
-    socket.on("admins-availability", (onlineAdmins: string[], orderId: string) => {
-      //console.log("admins-availability :", onlineAdmins);
-      if (onlineAdmins.length) {
-        setOrderId(orderId);
-      } else {
-        CancelOrder(0);
-        setOrderStatus("Sorry , no admin is online to handle your Order");
-        startCountingToRedirect = true;
+    socket.on(
+      "admins-availability",
+      (onlineAdmins: string[], orderId: string, acceptOrderIfNoOnlineAdmin: boolean) => {
+        //console.log("admins-availability :", onlineAdmins);
+        if (onlineAdmins.length || acceptOrderIfNoOnlineAdmin) {
+          OfflineOrder = acceptOrderIfNoOnlineAdmin;
+          setOrderId(orderId);
+        } else {
+          CancelOrder(0);
+          setOrderStatus("Sorry , no admin is online to handle your Order");
+          startCountingToRedirect = true;
+        }
       }
-    });
+    );
 
     socket.on("order-confirmation-to-user", (isAccepted: boolean, clientId) => {
       setOrderStatus(isAccepted ? "accepted" : "declined");
@@ -368,7 +380,17 @@ export default function CheckOut({
         payload: `${arr[0].day} | ${arr[0].hours} : ${arr[0].minutes}`,
       });
     }
+    return () => {};
   }, []);
+
+  useEffect(() => {
+    socket.connect();
+
+    return () => {
+      socket.disconnect();
+    };
+  }, []);
+
   console.log(orderStatus);
   socket.on("pending-order-canceling-confirmation-to-checkout", (canceledOrderId: string) => {
     console.log("compare", orderId, canceledOrderId);
@@ -385,11 +407,20 @@ export default function CheckOut({
     let interval: any;
     if (startCountingToConfirm) {
       interval = setInterval(() => {
-        if (countdownAfterCheckoutCounter < 1) {
+        if (countdownAfterCheckoutCounter < 1 && !OfflineOrder) {
           //timeout waiting for admin response
           setCountdownToRedirect(10); // less redirect waiting time
           setOrderStatus("admin didn't respond , order canceled");
           startCountingToRedirect = true;
+        }
+        if (countdownAfterCheckoutCounter < 1 && OfflineOrder) {
+          //timeout waiting for admin response
+          setCountdownToRedirect(10); // less redirect waiting time
+          setOrderStatus("order AUTO COMPLETED, delivery delays may occurs ");
+          startCountingToRedirect = true;
+          setTimeout(() => {
+            sendOrderToDb();
+          }, 6000);
         }
         setCountdownAfterCheckoutCounter((seconds: number) => seconds - 1);
       }, 1000);
@@ -435,7 +466,10 @@ export default function CheckOut({
     return (
       <div>
         <h1>waiting for admin confirmation</h1>
-        <h3>otherwise,order will be canceled in {countdownAfterCheckoutCounter}</h3>
+        <h3>
+          otherwise,order will be {OfflineOrder ? "auto-completed" : "canceled"} in{" "}
+          {countdownAfterCheckoutCounter}
+        </h3>
         <h3>don't close this page or order will be canceled</h3>
         <button onClick={CancelOrderAfterConfirmation}>cancel order</button>
       </div>

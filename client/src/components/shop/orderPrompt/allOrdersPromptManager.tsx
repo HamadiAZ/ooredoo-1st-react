@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { orderToDb } from "../../../types/types";
 import SinglePromptManager from "./singlePromptManager";
 
-export default function AllOrdersPromptManager({ socket }: any) {
+export default function AllOrdersPromptManager({ socket, shopId }: any) {
   //
   const [promptArrayState, setPromptArrayState] = useState<JSX.Element[]>([]);
 
@@ -21,6 +21,7 @@ export default function AllOrdersPromptManager({ socket }: any) {
           ...prev,
           <SinglePromptManager
             key={orderId}
+            shopId={shopId}
             orderId={orderId}
             socket={socket}
             socketId={socketId}

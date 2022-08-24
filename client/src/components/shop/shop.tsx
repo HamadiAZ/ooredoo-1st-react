@@ -21,6 +21,7 @@ import "../../styles/shop.css";
 import PaymentMethods from "./paymentMethods";
 import AuthContext from "../context/authContext";
 import AllOrdersPromptManager from "./orderPrompt/allOrdersPromptManager";
+import AutoAcceptedOrdersManager from "./autoAcceptedOrders/autoAcceptedOrdersManager";
 
 const initialState = {
   mon: [],
@@ -460,8 +461,10 @@ export default function Shop({
 
   return (
     <div>
-      <AllOrdersPromptManager socket={socket} />
-
+      <AllOrdersPromptManager socket={socket} shopId={shopId} />
+      {loginStatus.privilege === "admin" && (
+        <AutoAcceptedOrdersManager socket={socket} shopId={shopId} />
+      )}
       <h1>welcome to ooredoo {name} shop</h1>
       <p>
         {"our shop is now "}
