@@ -8,7 +8,7 @@ export default function AdminOrderConfirmationPrompt({
   promptCountDown,
 }: any): JSX.Element {
   return (
-    <div id="shop-admin-order-confirmation-prompt">
+    <div id="shop-admin-single-order-confirmation-prompt">
       <h4 style={{ margin: "0.2rem auto" }}>New Order</h4>
       <hr style={{ width: "99.5%" }} />
       <table style={{ margin: "0.5rem 0" }}>

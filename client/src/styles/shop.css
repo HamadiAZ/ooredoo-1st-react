@@ -22,8 +22,6 @@ html {
 }
 #shop-admin-order-confirmation-prompt {
   border-radius: 15px;
-  background-color: rgb(232, 232, 232);
-  box-shadow: 0 0 10px rgba(0, 0, 0, 0.6);
   position: absolute;
   bottom: 3vh;
   right: 3vw;
@@ -31,12 +29,26 @@ html {
   min-height: 10rem;
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
-  gap: 0;
+  justify-content: space-evenly;
+  gap: 1rem;
+  padding: 0;
 }
 
 #shop-admin-order-confirmation-prompt div {
-  margin-bottom: 1.2rem;
+  margin-bottom: 0rem;
+}
+#shop-admin-single-order-confirmation-prompt {
+  border-radius: 15px;
+  background-color: rgb(232, 232, 232);
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.6);
+  position: relative;
+  min-width: 26rem;
+  min-height: 10rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 0;
+  padding-bottom: 1rem;
 }
 
 .prompt-two-buttons-container {
