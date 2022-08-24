@@ -64,7 +64,7 @@ export default function App(): JSX.Element {
           {loginStatus.isLoggedIn && loginStatus.privilege === "admin" && (
             <>
               <Route path="/admin/addShop" element={<AddShop globalPath={globalPath} />} />
-              <Route path="/admin/orders" element={<Orders globalPath={globalPath} />} />
+              <Route path="/admin/orders" element={<Orders />} />
               <Route path="/admin" element={<Admin globalPath={globalPath} />} />
             </>
           )}

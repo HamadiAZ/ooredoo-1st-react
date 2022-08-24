@@ -24,7 +24,7 @@ const initialState: SelectorType = {
 };
 let startCountingToRedirect: boolean = false;
 let startCountingToConfirm: boolean = false;
-let orderContentToDb: any;
+let orderContentToDb: orderToDb;
 let OfflineOrder: boolean = false;
 
 const socket = io("http://localhost:5000");
@@ -108,7 +108,7 @@ export default function CheckOut({
   }
 
   async function handleOrder(): Promise<void> {
-    setCountdownAfterCheckoutCounter(60);
+    setCountdownAfterCheckoutCounter(10);
     setCountdownToRedirect(20);
     setOrderStatus("waiting for admin confirmation");
     startCountingToConfirm = true;

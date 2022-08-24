@@ -1,7 +1,7 @@
 const { v4: uuid } = require("uuid");
 
 //parameters
-const acceptOrderIfNoOnlineAdmin = false;
+const acceptOrderIfNoOnlineAdmin = true;
 
 // variables
 let onlineAdmins = [];
@@ -53,7 +53,9 @@ module.exports = async function (io) {
 
     socket.on("shop-admin-is-online", (shopId) => {
       // setting online admins array
+      onlineAdmins = onlineAdmins.filter((admin) => admin[0] != socket.id);
       onlineAdmins.push([socket.id, shopId]);
+
       console.log("connected admins array :", onlineAdmins);
       shopOrders = getPendingOrdersForShop(shopId);
       socket.emit("here-are-your-pending-orders-admin", shopOrders);
@@ -141,6 +143,7 @@ function addOrderToPendingOrders(orderId, shopId, clientId, data) {
     pendingOrders[shopId] = [newOrder];
   }
 }
+
 function getPendingOrdersForShop(shopId) {
   if (pendingOrders[shopId]?.length >= 0) {
     //  array of shop orders already defined

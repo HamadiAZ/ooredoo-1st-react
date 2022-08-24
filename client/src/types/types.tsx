@@ -174,6 +174,17 @@ export type orderFromDb = {
   delivery_time: string;
   content: orderContentType[];
 };
+export type orderFromDbJsFormat = {
+  orderId: number;
+  shopId: number;
+  userId: number;
+  userName: string;
+  mdp: string;
+  mdv: string;
+  deliveryTime: string;
+  deliveryAddr: string;
+  content: orderContentType[];
+};
 
 export type authenticationStateType = {
   emailLogin: string;

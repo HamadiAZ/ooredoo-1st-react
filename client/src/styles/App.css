@@ -382,7 +382,7 @@ footer {
 }
 
 #prompt-root-container {
-  position: absolute;
+  position: fixed;
   margin: 0;
   padding: 0;
   width: 100%;
@@ -392,6 +392,8 @@ footer {
   display: flex;
   justify-content: center;
   align-items: center;
+  bottom: 0;
+  overflow: auto;
 }
 #prompt-content-container {
   background-color: white;

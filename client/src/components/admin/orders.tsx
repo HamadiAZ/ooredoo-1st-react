@@ -4,7 +4,9 @@ import Prompt from "./prompt";
 import { MdDelete } from "react-icons/md";
 import { orderFromDb } from "../../types/types";
 
-export default function Orders({ globalPath }: { globalPath: string }) {
+import { globalPath } from "../../const/const";
+
+export default function Orders() {
   const [orders, setOrders] = useState<orderFromDb[]>([]);
   const [promptState, setPromptState] = useState<{ show: boolean; order: any }>({
     show: false,

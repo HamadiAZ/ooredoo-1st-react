@@ -462,9 +462,11 @@ export default function Shop({
   return (
     <div>
       <AllOrdersPromptManager socket={socket} shopId={shopId} />
+
       {loginStatus.privilege === "admin" && (
         <AutoAcceptedOrdersManager socket={socket} shopId={shopId} />
       )}
+
       <h1>welcome to ooredoo {name} shop</h1>
       <p>
         {"our shop is now "}
@@ -474,12 +476,16 @@ export default function Shop({
           <span style={{ color: "#b80000", fontWeight: "bold" }}>Closed</span>
         )}
       </p>
+
       <ScheduleTable
         scheduleOfEveryDay={scheduleOfEveryDay}
         styleSpanOfCurrentSchedule={styleSpanOfCurrentSchedule}
       />
+
       <PaymentMethods shopData={shopData} />
+
       <ProductMenu handleAddToCard={handleAddToCard} />
+
       <div className="shop-div-double-items-flex-container">
         {/*  <iframe
             id="gmap_canvas"
