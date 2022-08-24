@@ -7,10 +7,14 @@ export default function SinglePromptManager({
   socket,
   socketId,
   data,
+  orderId,
+  handleHidePrompt,
 }: {
   socket: any;
   socketId: string;
   data: orderToDb;
+  orderId: string;
+  handleHidePrompt: (arg: string) => void;
 }) {
   const [showOrderConfirmationPrompt, setShowOrderConfirmationPrompt] = useState<boolean>(false);
   const [promptCountDown, setPromptCountDown] = useState<number>(57);
@@ -28,11 +32,13 @@ export default function SinglePromptManager({
   function handleDeclineOrder(): void {
     if (orderStatus === "accepted") return;
     //if already accepted : this button wont do anything
+
     setPromptCountDown(57);
     startPromptCountDown = false;
     socket.emit("order-confirmation", false, clientId);
     setOrderStatus("declined");
     setTimeout(() => {
+      handleHidePrompt(orderId);
       setShowOrderConfirmationPrompt(false);
       setOrderStatus("not-ordered");
     }, 4000);
@@ -46,6 +52,7 @@ export default function SinglePromptManager({
     socket.emit("order-confirmation", true, clientId);
     setOrderStatus("accepted");
     setTimeout(() => {
+      handleHidePrompt(orderId);
       setShowOrderConfirmationPrompt(false);
       setOrderStatus("not-ordered");
     }, 4000);

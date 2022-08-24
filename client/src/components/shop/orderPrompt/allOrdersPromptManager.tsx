@@ -1,20 +1,30 @@
 import React, { useEffect, useState } from "react";
-//import uuid from "react-uuid";
+import { v4 as uuid } from "uuid";
 
 import { orderToDb } from "../../../types/types";
-import AdminOrderConfirmationPrompt from "./adminOrderConfirmationPrompt";
 import SinglePromptManager from "./singlePromptManager";
-let startPromptCountDown: boolean = false;
 
 export default function AllOrdersPromptManager({ socket }: any) {
-  // handleHidePrompt();
+  function handleHidePrompt(orderId: string): void {
+    setPromptArrayState((prev) => {
+      return prev.filter((singlePrompt) => singlePrompt.key != orderId);
+    });
+  }
 
   const [promptArrayState, setPromptArrayState] = useState<JSX.Element[]>([]);
   useEffect(() => {
-    socket.on("new-order", (adminId: string, socketId: string, data: any) => {
+    socket.on("new-order", (adminId: string, socketId: string, data: orderToDb) => {
+      const newOrderId = uuid();
       setPromptArrayState((prev) => [
         ...prev,
-        <SinglePromptManager key={socketId} socket={socket} socketId={socketId} data={data} />,
+        <SinglePromptManager
+          key={newOrderId}
+          orderId={newOrderId}
+          socket={socket}
+          socketId={socketId}
+          data={data}
+          handleHidePrompt={handleHidePrompt}
+        />,
       ]);
     });
   }, []);
