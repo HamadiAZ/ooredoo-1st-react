@@ -32,7 +32,7 @@ router.post("/reg", async (req, res) => {
         const cookieOptions = {
           httpOnly: true, // http cookie for security
         };
-        res.cookie("token", token, cookieOptions).send({ username: user.rows[0].username });
+        res.cookie("token", token, cookieOptions).send({ username: newUser.rows[0].username });
       } else res.send({ username: "" });
     });
   } catch (error) {
