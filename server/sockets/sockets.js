@@ -26,45 +26,54 @@ module.exports = async function (io) {
   }); */
 
   let onlineAdmins = [];
+  // [   [ADMINsocketID,ShopID] , [ADMINsocketID,ShopID] ...]
+
   io.on("connection", async (socket) => {
     //
     socket.on("disconnect", function () {
       // if its admin : delete it from the onlineAdmins
-
-      let isItAdmin = "";
-      onlineAdmins = onlineAdmins.filter((item) => {
-        if (item === socket.id) isItAdmin = "admin";
-        return item != socket.id;
+      let isItAdmin = "client";
+      onlineAdmins = onlineAdmins.filter((ADMINsocketID) => {
+        if (ADMINsocketID[0] === socket.id) isItAdmin = "admin";
+        return ADMINsocketID[0] != socket.id;
       });
       //console.log(`disconnected ${isItAdmin} id :`, socket.id);
     });
-    socket.on("shop", (shopId) => {
+
+    socket.on("shop-admin-is-online", (shopId) => {
       // setting online admins MAP
-      onlineAdmins.push(socket.id);
-      socket.join(shopId);
+      onlineAdmins.push([socket.id, shopId]);
+      //socket.join(shopId);
       //console.log("admin connected with id" + socket.id);
-      socket.in(30).emit("message", 5000);
-      console.log("connected admins id :", onlineAdmins);
-    });
-    socket.on("checkout-join", (shopId, loginStatus) => {
-      socket.join(shopId);
-      console.log("user joined room " + shopId);
+      //socket.in(30).emit("message", 5000);
+      console.log("connected admins array :", onlineAdmins);
     });
 
-    socket.on("checkout-prompt", (data) => {
-      socket.join(parseInt(data.shopId));
+    socket.on("checkout-prompt-from-client", (data) => {
+      const { shopId } = data;
       // admins online
-      onlineAdmins.forEach((adminId) => {
-        socket.to(adminId).emit("new-order", adminId, socket.id, data);
+      onlineAdmins.forEach((adminInfo) => {
+        if (shopId == adminInfo[1])
+          socket.to(adminInfo[0]).emit("new-order", adminInfo[0], socket.id, data);
       });
+      console.log(onlineAdmins);
       //response of admins availability
-      socket.emit("admins-availability", onlineAdmins, data);
+      // if front i will check if onlineAdmins of this shop=[] then no admin is online
+      const onlineAdminsOfRequestedShop = onlineAdmins.filter((item) => item[1] == shopId);
+      console.log("requested admins array", onlineAdminsOfRequestedShop);
+      socket.emit("admins-availability", onlineAdminsOfRequestedShop, data);
     });
 
     socket.on("order-confirmation", (isConfirmed, clientId) => {
       socket.to(clientId).emit("order-confirmation-to-user", isConfirmed);
     });
 
+    // disabled for now
+
+    /* socket.on("checkout-join", (shopId, loginStatus) => {
+      socket.join(shopId);
+      console.log("user joined room " + shopId);
+    }); */
     //checkoutConfirmation(socket, onlineAdmins, io);
   });
 };

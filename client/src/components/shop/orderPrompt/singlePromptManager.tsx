@@ -2,7 +2,8 @@ import React, { useEffect, useState } from "react";
 import { orderToDb } from "../../../types/types";
 import AdminOrderConfirmationPrompt from "./adminOrderConfirmationPrompt";
 let startPromptCountDown: boolean = false;
-export default function OrderPromptManager({ socket }: any) {
+
+export default function SinglePromptManager({ socket }: any) {
   const [showOrderConfirmationPrompt, setShowOrderConfirmationPrompt] = useState<boolean>(false);
   const [promptCountDown, setPromptCountDown] = useState<number>(57);
   const [orderStatus, setOrderStatus] = useState<string>("not-ordered");
@@ -28,6 +29,7 @@ export default function OrderPromptManager({ socket }: any) {
       setOrderStatus("not-ordered");
     }, 4000);
   }
+
   function handleAcceptOrder(): void {
     if (orderStatus === "declined") return;
     //if already declined : this button wont do anything
@@ -40,6 +42,7 @@ export default function OrderPromptManager({ socket }: any) {
       setOrderStatus("not-ordered");
     }, 4000);
   }
+
   useEffect(() => {
     let interval: any;
     if (startPromptCountDown) {
@@ -57,8 +60,6 @@ export default function OrderPromptManager({ socket }: any) {
 
   useEffect(() => {
     socket.on("new-order", (adminId: string, socketId: string, data: any) => {
-      //console.log(" new order");
-      //console.log(adminId, socketId, data);
       togglePrompt(socketId, data);
     });
   }, []);

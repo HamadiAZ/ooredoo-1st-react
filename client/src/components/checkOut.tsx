@@ -124,7 +124,7 @@ export default function CheckOut({
       }),
     };
     setShoppingBasket([]);
-    socket.emit("checkout-prompt", dataBody);
+    socket.emit("checkout-prompt-from-client", dataBody);
   }
 
   function add15Min(h: number, m: number): { h: number; m: number } {

@@ -20,7 +20,7 @@ import { daysOfWeek, ShopDataInit, products } from "../../const/const";
 import "../../styles/shop.css";
 import PaymentMethods from "./paymentMethods";
 import AuthContext from "../context/authContext";
-import OrderPromptManager from "./orderPrompt/orderPromptManager";
+import AllOrdersPromptManager from "./orderPrompt/allOrdersPromptManager";
 
 const initialState = {
   mon: [],
@@ -450,7 +450,7 @@ export default function Shop({
   useEffect(() => {
     if (loginStatus.isLoggedIn && loginStatus.privilege === "admin") {
       console.log("admin");
-      socket.emit("shop", parseInt(shopId || "0"));
+      socket.emit("shop-admin-is-online", parseInt(shopId || "0"));
     }
   }, [loginStatus.isLoggedIn]);
 
@@ -460,7 +460,7 @@ export default function Shop({
 
   return (
     <div>
-      <OrderPromptManager socket={socket} />
+      <AllOrdersPromptManager socket={socket} />
 
       <h1>welcome to ooredoo {name} shop</h1>
       <p>
