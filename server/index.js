@@ -148,3 +148,22 @@ app.post("/api/order/newOrder", async (req, res) => {
     console.error(error.message);
   }
 });
+
+app.put("/api/client/updateClientOrdersStatus", async (req, res) => {
+  try {
+    let data = req.body;
+    console.log(data);
+    if (data.length) {
+      const order = data[0];
+      //console.log(order)
+      data.forEach(async (order) => {
+        await pool.query(`
+          UPDATE orders SET "status" = '${order.status}' 
+          WHERE ("order_id"=${order.order_id});`);
+      });
+    }
+    res.send(JSON.stringify(data.length + "order status updated successfully"));
+  } catch (error) {
+    console.error(error.message);
+  }
+});

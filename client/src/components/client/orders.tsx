@@ -4,7 +4,7 @@ import Prompt from "./prompt";
 import { MdDelete } from "react-icons/md";
 import { LoggedInState, orderFromDb } from "../../types/types";
 
-import { globalPath } from "../../const/const";
+import { daysOfWeek, globalPath } from "../../const/const";
 import AuthContext from "../context/authContext";
 
 export default function Orders() {
@@ -55,9 +55,72 @@ export default function Orders() {
     }
   }
 
+  async function autoCancelOldOrders(): Promise<void> {
+    let ordersUpdated = false;
+    console.log(orders);
+    let ordersCopy: orderFromDb[] = orders.map((order: orderFromDb) => {
+      if (!checkOrderPickupTime(order) && order.status === "pending confirmation") {
+        const orderCopy: orderFromDb = { ...order };
+        orderCopy.status = "auto Canceled";
+        ordersUpdated = true;
+        return orderCopy;
+      }
+      return order;
+    });
+    console.log("71", ordersUpdated, ordersCopy);
+    //if there is a modification => update db also
+    if (!ordersUpdated) return;
+    const updatedOrders = ordersCopy.filter((order) => order.status === "auto Canceled");
+    console.log(updatedOrders);
+    updateDb(updatedOrders);
+  }
+
+  function checkOrderPickupTime(order: orderFromDb): boolean {
+    const d = new Date();
+    const todayIndex: number = d.getDay();
+    const DateNow: any = {
+      day: daysOfWeek[todayIndex as keyof typeof daysOfWeek],
+      hoursNow: d.getHours(),
+      minutesNow: d.getMinutes(),
+    };
+    const orderStringTime = order.delivery_time.slice(4).split(":");
+    const orderDate = {
+      orderDay: order.delivery_time.slice(0, 3),
+      orderH: parseInt(orderStringTime[0]),
+      orderM: parseInt(orderStringTime[1]),
+    };
+    if (DateNow.day !== orderDate.orderDay) return false;
+    if (DateNow.hoursNow > orderDate.orderH) return false;
+    if (DateNow.hoursNow == orderDate.orderH && DateNow.minutesNow > orderDate.orderM) return false;
+    return true;
+  }
+
+  async function updateDb(orders: orderFromDb[]): Promise<void> {
+    console.log("sent to db");
+    try {
+      let res = await fetch(globalPath + "/api/client/updateClientOrdersStatus/", {
+        method: "PUT",
+        body: JSON.stringify(orders),
+        credentials: "include",
+        headers: {
+          Accept: "application/json",
+          "Content-Type": "application/json",
+        },
+      }); // db success , now update page with data from db again
+      // infinite loop if there is an error in updating :D
+      getOrders();
+    } catch (error) {
+      console.error(error);
+    }
+  }
+
   useEffect(() => {
     getOrders();
   }, []);
+
+  useEffect(() => {
+    autoCancelOldOrders();
+  }, [orders.length]);
 
   return (
     <main id="admin-page--main-container">
@@ -120,4 +183,7 @@ export default function Orders() {
       {promptState.show && <Prompt promptState={promptState} setPromptState={setPromptState} />}
     </main>
   );
+}
+function daysOfWeekType(daysOfWeekType: any) {
+  throw new Error("Function not implemented.");
 }
