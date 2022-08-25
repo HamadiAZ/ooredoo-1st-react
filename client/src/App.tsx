@@ -11,6 +11,7 @@ import Admin from "./components/admin/admin";
 import Shop from "./components/shop/shop";
 import CheckOut from "./components/checkout/checkOut";
 import Orders from "./components/admin/orders";
+import ClientOrders from "./components/client/orders";
 import AuthContext from "./components/context/authContext";
 
 import { basketProductType } from "./types/types";
@@ -66,6 +67,11 @@ export default function App(): JSX.Element {
               <Route path="/admin/addShop" element={<AddShop globalPath={globalPath} />} />
               <Route path="/admin/orders" element={<Orders />} />
               <Route path="/admin" element={<Admin globalPath={globalPath} />} />
+            </>
+          )}
+          {loginStatus.isLoggedIn && loginStatus.privilege === "user" && (
+            <>
+              <Route path="/client/orders" element={<ClientOrders />} />
             </>
           )}
         </Routes>

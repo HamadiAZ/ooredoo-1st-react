@@ -151,6 +151,7 @@ export type orderContentType = {
   quantity: number;
   quantityLeft: number;
   shopId: number;
+  status: string;
 };
 export type orderToDb = {
   shopId: number;
@@ -160,6 +161,7 @@ export type orderToDb = {
   mdv: string;
   deliveryTime: string;
   deliveryAddr: string;
+  status: string;
   content: orderContentType[];
 };
 export type orderFromDb = {
@@ -172,6 +174,7 @@ export type orderFromDb = {
   created_at: string;
   delivery_addr: string;
   delivery_time: string;
+  status: string;
   content: orderContentType[];
 };
 export type orderFromDbJsFormat = {
@@ -183,6 +186,7 @@ export type orderFromDbJsFormat = {
   mdv: string;
   deliveryTime: string;
   deliveryAddr: string;
+  status: string;
   content: orderContentType[];
 };
 

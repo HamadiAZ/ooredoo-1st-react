@@ -56,12 +56,13 @@ export default function CheckOut({
 
   let dataBody: orderToDb = {
     shopId: parseInt(shopId || "0"),
-    userId: 1,
+    userId: loginStatus.id,
     userName: loginStatus.username || "none",
     mdp: state.inputMdpSelector,
     mdv: state.inputMdvSelector,
     deliveryTime: correctDBPickingUpDate(state.inputTimeSelector),
     deliveryAddr: state.inputAddrSelector,
+    status: "processing",
     content: shoppingBasket.map((item) => {
       let copy: any = { ...item };
       delete copy.shopUpcomingSessions;
@@ -114,12 +115,13 @@ export default function CheckOut({
     startCountingToConfirm = true;
     dataBody = {
       shopId: shoppingBasket[0].shopId,
-      userId: 1,
+      userId: loginStatus.id,
       userName: loginStatus.username || "none",
       mdp: state.inputMdpSelector,
       mdv: state.inputMdvSelector,
       deliveryTime: correctDBPickingUpDate(state.inputTimeSelector),
       deliveryAddr: state.inputAddrSelector,
+      status: "processing",
       content: shoppingBasket.map((item) => {
         let copy: any = { ...item };
         delete copy.shopUpcomingSessions;
@@ -307,7 +309,7 @@ export default function CheckOut({
     }
     return arrayOf15Minutes;
   }
-  console.log(dataBody);
+
   async function ConfirmOrder(interval: any): Promise<void> {
     setOrderStatus(""); // to avoid redoing this fn again ( i had double uploads to db)
     if (interval) clearInterval(interval);
@@ -391,7 +393,6 @@ export default function CheckOut({
     };
   }, []);
 
-  console.log(orderStatus);
   socket.on("pending-order-canceling-confirmation-to-checkout", (canceledOrderId: string) => {
     console.log("compare", orderId, canceledOrderId);
     console.log("to ", canceledOrderId);
@@ -419,6 +420,7 @@ export default function CheckOut({
           setOrderStatus("order AUTO COMPLETED, delivery delays may occurs ");
           startCountingToRedirect = true;
           setTimeout(() => {
+            orderContentToDb.status = "pending confirmation";
             sendOrderToDb();
           }, 6000);
         }

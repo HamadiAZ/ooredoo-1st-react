@@ -1,10 +1,11 @@
-import { useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import Prompt from "./prompt";
 
 import { MdDelete } from "react-icons/md";
-import { orderFromDb } from "../../types/types";
+import { LoggedInState, orderFromDb } from "../../types/types";
 
 import { globalPath } from "../../const/const";
+import AuthContext from "../context/authContext";
 
 export default function Orders() {
   const [orders, setOrders] = useState<orderFromDb[]>([]);
@@ -13,9 +14,12 @@ export default function Orders() {
     order: {},
   });
 
+  const { loginStatus }: { loginStatus: LoggedInState; getLoginStatus: () => Promise<void> } =
+    useContext(AuthContext);
+
   async function getOrders(): Promise<void> {
     try {
-      let res = await fetch(globalPath + "/api/admin/getOrders", {
+      let res = await fetch(globalPath + "/api/client/getOrders/" + loginStatus.id, {
         credentials: "include",
         headers: {
           Accept: "application/json",
@@ -23,8 +27,6 @@ export default function Orders() {
         },
       });
       let data: orderFromDb[] = await res.json();
-      console.log(data);
-
       setOrders(data);
     } catch (error) {
       console.error(error);

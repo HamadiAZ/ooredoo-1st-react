@@ -16,7 +16,13 @@ export default function AllOrdersPromptManager({ socket, shopId }: any) {
   useEffect(() => {
     socket.on(
       "new-order-to-shop-admins",
-      (adminId: string, socketId: string, data: orderToDb, orderId: string) => {
+      (
+        adminId: string,
+        socketId: string,
+        data: orderToDb,
+        orderId: string,
+        autoAcceptSetting: boolean
+      ) => {
         setPromptArrayState((prev) => [
           ...prev,
           <SinglePromptManager
@@ -27,6 +33,7 @@ export default function AllOrdersPromptManager({ socket, shopId }: any) {
             socketId={socketId}
             data={data}
             handleHidePrompt={handleHidePrompt}
+            autoAcceptSetting={autoAcceptSetting}
           />,
         ]);
       }

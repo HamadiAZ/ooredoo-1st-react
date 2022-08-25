@@ -1,4 +1,6 @@
 const { v4: uuid } = require("uuid");
+const pool = require("../db");
+const router = require("express").Router();
 
 //parameters
 const acceptOrderIfNoOnlineAdmin = true;
@@ -12,18 +14,20 @@ let clientsWithPendingOrders = [];
 
 let pendingOrders = {};
 /* structure will be {
-    31 shopId:[pending orders by order],
-    32 :[array or orders],
-    with every order item :
-    { id:string
+     shopId : [pending orders array],
+    
+    with every order of array :
+    { 
+      id:string
       shopId:number
       clientId:string
       data: order db Body}
     }
-      orderId,shopId,clientId, data
+
   } */
 
 module.exports = async function (io) {
+  //
   io.on("connection", async (socket) => {
     //
     socket.on("disconnect", function () {
@@ -34,14 +38,17 @@ module.exports = async function (io) {
         return onlineAdmin[0] != socket.id;
       });
 
+      //if its client : same
       clientsWithPendingOrders = clientsWithPendingOrders.filter((clientOnline) => {
+        // [clientId,orderId,shopId]
         if (clientOnline[0] === socket.id) {
+          // client found
           const shopId = clientOnline[2];
           const orderId = clientOnline[1];
-          userType = "client"; // client found
+          userType = "client";
           onlineAdmins.forEach((adminInfo) => {
+            // broadcast to every connected admin of the shop
             if (shopId == adminInfo[1]) {
-              console.log("im emitting here!");
               socket.to(adminInfo[0]).emit("cancel-pending-order-admin", orderId);
             }
           });
@@ -51,14 +58,14 @@ module.exports = async function (io) {
       console.log(`disconnected ${userType} id :`, socket.id);
     });
 
-    socket.on("shop-admin-is-online", (shopId) => {
+    socket.on("shop-admin-is-online", async (shopId) => {
       // setting online admins array
       onlineAdmins = onlineAdmins.filter((admin) => admin[0] != socket.id);
       onlineAdmins.push([socket.id, shopId]);
-
       console.log("connected admins array :", onlineAdmins);
-      shopOrders = getPendingOrdersForShop(shopId);
-      socket.emit("here-are-your-pending-orders-admin", shopOrders);
+      const pendingShopOrders = await getPendingOrdersForShopFromDb(shopId);
+      //admin connected : send him the pending orders of the shop
+      socket.emit("here-are-your-pending-orders-admin", pendingShopOrders);
     });
 
     socket.on("checkout-prompt-from-client", (data) => {
@@ -70,14 +77,21 @@ module.exports = async function (io) {
       }
       console.log(pendingOrders);
       clientsWithPendingOrders.push([socket.id, orderId, shopId]);
-
       // send to online admins of this the same shop
       onlineAdmins.forEach((adminInfo) => {
         if (shopId == adminInfo[1])
           socket
             .to(adminInfo[0])
-            .emit("new-order-to-shop-admins", adminInfo[0], socket.id, data, orderId);
+            .emit(
+              "new-order-to-shop-admins",
+              adminInfo[0],
+              socket.id,
+              data,
+              orderId,
+              acceptOrderIfNoOnlineAdmin
+            );
       });
+
       //response of admins availability
       // if front i will check if onlineAdmins of this shop=[] then no admin is online
       const onlineAdminsOfRequestedShop = onlineAdmins.filter((item) => item[1] == shopId);
@@ -151,6 +165,17 @@ function getPendingOrdersForShop(shopId) {
   } else {
     // undefined
     return [];
+  }
+}
+
+async function getPendingOrdersForShopFromDb(shopId) {
+  try {
+    data = await pool.query(
+      `select * from orders where "shop_id"='${shopId}' AND "status"='pending confirmation'`
+    );
+    return data.rows;
+  } catch (error) {
+    console.error(error.message);
   }
 }
 

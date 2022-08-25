@@ -77,7 +77,7 @@ router.get("/loginStatus", async (req, res) => {
       else
         res
           .status(200)
-          .send({ isLoggedIn: true, privilege: "user", name: name, username: username });
+          .send({ isLoggedIn: true, privilege: "user", name: name, username: username, id });
     }
   } catch (error) {
     console.error(error);

@@ -1,22 +1,21 @@
 import { useEffect, useState } from "react";
-import { orderFromDbJsFormat } from "../../../types/types";
+import { orderFromDb, orderFromDbJsFormat } from "../../../types/types";
 import Orders from "./orders";
 
 export default function AutoAcceptedOrdersManager({ socket, shopId }: any) {
   const [viewAcceptedOrdersManager, setViewAcceptedOrdersManager] = useState<boolean>(false);
 
-  const [orders, setOrders] = useState<[string, orderFromDbJsFormat][]>([]);
+  const [orders, setOrders] = useState<orderFromDb[]>([]);
 
   useEffect(() => {
     getOrders();
   }, []);
 
   function getOrders(): void {
-    socket.on("here-are-your-pending-orders-admin", (shopOrders: any) => {
-      if (shopOrders) {
-        //console.dir(shopOrders);
-        const orders = shopOrders.map((order: any) => [order.id, order.data]);
-        setOrders(orders);
+    socket.on("here-are-your-pending-orders-admin", (shopOrders: orderFromDb[]) => {
+      if (shopOrders.length) {
+        console.log(shopOrders);
+        setOrders(shopOrders);
       }
       // if (orders) setOrders(orders);
     });
@@ -34,7 +33,9 @@ export default function AutoAcceptedOrdersManager({ socket, shopId }: any) {
 
           <p>click Here to View</p>
         </div>
-        {viewAcceptedOrdersManager && <Orders shopId={shopId} socket={socket} orders={orders} />}
+        {viewAcceptedOrdersManager && (
+          <Orders shopId={shopId} socket={socket} orders={orders} setOrders={setOrders} />
+        )}
         {viewAcceptedOrdersManager && (
           <div
             className="btn"

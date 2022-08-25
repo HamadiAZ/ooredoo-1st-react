@@ -137,7 +137,9 @@ export default function ConnectionSideBar(props: any): JSX.Element {
             {/* client is logged in */}
             <p>welcome {loginStatus.name}</p>
             <p>you are logged in as client</p>
-            <button type="submit">your orders</button>
+            <Link to="/client/orders">
+              <button>view orders</button>
+            </Link>
           </div>
         )
       ) : viewInscriptionPage ? (

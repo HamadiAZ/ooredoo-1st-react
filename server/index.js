@@ -113,12 +113,22 @@ app.get("/api/getShopData/:id_shop", async (req, res) => {
   }
 });
 
+app.get("/api/client/getOrders/:id_user", async (req, res) => {
+  try {
+    data = await pool.query(`select * from orders where "user_id"='${req.params.id_user}'`);
+    res.json(data.rows);
+  } catch (error) {
+    console.error(error.message);
+    res.send(JSON.stringify(error.message));
+  }
+});
+
 app.post("/api/order/newOrder", async (req, res) => {
   try {
     let data = await req.body;
     //console.log(data);
     const newOrder = await pool.query(`
-    INSERT INTO orders( shop_id, user_id, user_name, mdp,mdv,delivery_addr ,delivery_time,content)
+    INSERT INTO orders( shop_id, user_id, user_name, mdp,mdv,delivery_addr ,delivery_time,content,status)
      VALUES(
       '${data.shopId}',
       '${data.userId}',
@@ -127,7 +137,9 @@ app.post("/api/order/newOrder", async (req, res) => {
       '${data.mdv}',
       '${data.deliveryAddr}',
       '${data.deliveryTime}',
-      '${JSON.stringify(data.content)}') RETURNING order_id,created_at ,delivery_time;
+      '${JSON.stringify(data.content)}',
+      '${data.status}')
+       RETURNING order_id,created_at ,delivery_time;
     `);
 
     res.send(newOrder.rows);

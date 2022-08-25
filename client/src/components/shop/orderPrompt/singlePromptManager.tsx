@@ -10,6 +10,7 @@ export default function SinglePromptManager({
   data,
   orderId,
   handleHidePrompt,
+  autoAcceptSetting,
 }: {
   shopId: number;
   socket: any;
@@ -17,6 +18,7 @@ export default function SinglePromptManager({
   data: orderToDb;
   orderId: string;
   handleHidePrompt: (arg: string) => void;
+  autoAcceptSetting: boolean;
 }) {
   const [showOrderConfirmationPrompt, setShowOrderConfirmationPrompt] = useState<boolean>(false);
   const [promptCountDown, setPromptCountDown] = useState<number>(57);
@@ -71,9 +73,10 @@ export default function SinglePromptManager({
         setPromptCountDown((seconds: number) => seconds - 1);
       }, 1000);
 
-      if (promptCountDown < 0 && orderStatus !== "accepted") {
+      if (promptCountDown < 0 && orderStatus !== "accepted" && orderStatus !== "declined") {
         clearInterval(interval);
-        handleDeclineOrder();
+        !autoAcceptSetting && handleDeclineOrder();
+        autoAcceptSetting && handleAcceptOrder();
       }
     }
     return () => clearInterval(interval);
@@ -88,6 +91,7 @@ export default function SinglePromptManager({
           handleDeclineOrder={handleDeclineOrder}
           orderStatus={orderStatus}
           promptCountDown={promptCountDown}
+          autoAcceptSetting={autoAcceptSetting}
         />
       )}
     </>

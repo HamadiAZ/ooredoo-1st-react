@@ -6,6 +6,7 @@ export default function AdminOrderConfirmationPrompt({
   handleDeclineOrder,
   orderStatus,
   promptCountDown,
+  autoAcceptSetting,
 }: any): JSX.Element {
   return (
     <div id="shop-admin-single-order-confirmation-prompt">
@@ -37,10 +38,11 @@ export default function AdminOrderConfirmationPrompt({
           onClick={handleDeclineOrder}
           style={{ width: "fit-content" }}
         >
-          decline {orderStatus === "not-ordered" && "(" + promptCountDown + ")"}
+          decline{" "}
+          {orderStatus === "not-ordered" && !autoAcceptSetting && "(" + promptCountDown + ")"}
         </button>
         <button className="btn btn-small buy" onClick={handleAcceptOrder}>
-          accept
+          accept {orderStatus === "not-ordered" && autoAcceptSetting && "(" + promptCountDown + ")"}
         </button>
       </div>
       <div>

@@ -30,6 +30,18 @@ router.post("/addShop", authAdmin, async (req, res) => {
   }
 });
 
+router.put("/ModifyOrder", authAdmin, async (req, res) => {
+  try {
+    let data = await req.body;
+    //console.log(data);
+    const orderId = await pool.query(`
+    UPDATE orders SET "status" = '${data.orderStatus}' WHERE "order_id"=${data.orderId} RETURNING "order_id";`);
+    res.send(JSON.stringify(orderId));
+  } catch (error) {
+    console.error(error.message);
+  }
+});
+
 router.get("/getMapPage", authAdmin, async (req, res) => {});
 
 router.get("/getOrders", authAdmin, async (req, res) => {
