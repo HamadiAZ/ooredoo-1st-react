@@ -166,6 +166,7 @@ export default function Shop({
       for (let group of schedule) {
         if ((group.days as any)[currentDay]) {
           for (let singleSession of group.schedule) {
+            //console.log(singleSession);
             if (singleSession.fulltime === true) return true;
             if (singleSession.startH < hoursNow && hoursNow < singleSession.endH) return true;
             if (
@@ -182,6 +183,7 @@ export default function Shop({
               singleSession.endM > minutesNow
             )
               return true;
+
             if (
               // time is 8:30 // session 8:20 =>9:30
               singleSession.startH == hoursNow &&
@@ -191,11 +193,12 @@ export default function Shop({
               return true;
             if (
               // time 15:45 // session 15:10=>15:40
-              singleSession.startH <= hoursNow &&
+              singleSession.startH === hoursNow &&
               hoursNow === singleSession.endH &&
               singleSession.endM < minutesNow
             )
               return false;
+
             if (
               // time 15:45 // session 15:10=>15:40
               singleSession.startH === hoursNow &&
