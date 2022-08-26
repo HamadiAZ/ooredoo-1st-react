@@ -8,7 +8,7 @@ export default function ({
   setShoppingBasket,
   dispatch,
   newSelectorArray,
-  state,
+  selectorState,
   shopData,
   basketCounter,
   handleOrder,
@@ -117,7 +117,11 @@ export default function ({
             <p>select picking time :</p>
           </td>
           <td>
-            <select name="select" value={state[Selector.time]} onChange={handleInputTimeSelector}>
+            <select
+              name="select"
+              value={selectorState[Selector.time]}
+              onChange={handleInputTimeSelector}
+            >
               {newSelectorArray.map((item: scheduleCheckoutObjectType) => {
                 return (
                   <option
@@ -140,7 +144,11 @@ export default function ({
             <p>select payment method :</p>
           </td>
           <td>
-            <select name="select" value={state[Selector.mdp]} onChange={handleInputMdpSelector}>
+            <select
+              name="select"
+              value={selectorState[Selector.mdp]}
+              onChange={handleInputMdpSelector}
+            >
               {Object.keys(shopData.mdp).map((item: string) => {
                 if (shopData.mdp[item as keyof typeof shopData.mdp] === true) {
                   return (
@@ -162,7 +170,11 @@ export default function ({
             <p>select picking method :</p>
           </td>
           <td>
-            <select name="select" value={state[Selector.mdv]} onChange={handleInputMdvSelector}>
+            <select
+              name="select"
+              value={selectorState[Selector.mdv]}
+              onChange={handleInputMdvSelector}
+            >
               {Object.keys(shopData.mdv).map((item: string) => {
                 if (shopData.mdv[item as keyof typeof shopData.mdv] === true) {
                   return (
@@ -175,7 +187,7 @@ export default function ({
             </select>
           </td>
         </tr>
-        {state.inputMdvSelector == "delivery" && (
+        {selectorState.inputMdvSelector == "delivery" && (
           <tr style={{ fontWeight: "bold" }}>
             <td></td>
             <td></td>
@@ -186,7 +198,7 @@ export default function ({
               <input
                 id="checkout-delivery-address-input"
                 name="input"
-                value={state[Selector.addr]}
+                value={selectorState[Selector.addr]}
                 onChange={handleAddressInput}
               ></input>
             </td>

@@ -152,7 +152,7 @@ app.post("/api/order/newOrder", async (req, res) => {
 app.put("/api/client/updateClientOrdersStatus", async (req, res) => {
   try {
     let data = req.body;
-    console.log(data);
+    //console.log(data);
     if (data.length) {
       const order = data[0];
       //console.log(order)
@@ -163,6 +163,19 @@ app.put("/api/client/updateClientOrdersStatus", async (req, res) => {
       });
     }
     res.send(JSON.stringify(data.length + "order status updated successfully"));
+  } catch (error) {
+    console.error(error.message);
+  }
+});
+
+app.put("/api/client/DeleteOrder/:order_id", async (req, res) => {
+  try {
+    const { order_id } = req.params;
+    const { client_id } = req.body;
+    data = await pool.query(
+      `DELETE FROM orders WHERE ("order_id"='${order_id}' AND "user_id"='${client_id}') RETURNING "order_id"`
+    );
+    res.json(data.fields);
   } catch (error) {
     console.error(error.message);
   }

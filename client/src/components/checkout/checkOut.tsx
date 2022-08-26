@@ -3,6 +3,9 @@ import { useNavigate, useParams } from "react-router-dom";
 import { io } from "socket.io-client";
 import { ShopDataInit, daysOfWeek } from "../../const/const";
 
+import OrderTableFilled from "./orderTableFilled";
+import AuthContext from "../context/authContext";
+import { generateSelector } from "./timeSelector";
 import {
   SelectorType,
   basketProductType,
@@ -13,8 +16,17 @@ import {
   orderToDb,
   LoggedInState,
 } from "../../types/types";
-import OrderTableFilled from "./orderTableFilled";
-import AuthContext from "../context/authContext";
+
+//     parameters  /////////////////////////////////////////////
+// admin confirmation wait time in seconds
+const adminConfirmationTimeOut: number = 60;
+
+// redirecting after order confirmation
+const redirectingTimeout: number = 20;
+
+////////////////////////////////////////////////////////////////
+
+const initCountdown = redirectingTimeout + adminConfirmationTimeOut;
 
 const initialState: SelectorType = {
   inputTimeSelector: "init",
@@ -22,53 +34,43 @@ const initialState: SelectorType = {
   inputMdvSelector: "surplace",
   inputAddrSelector: "--",
 };
-let startCountingToRedirect: boolean = false;
-let startCountingToConfirm: boolean = false;
+let startCounting: boolean = false;
 let orderContentToDb: orderToDb;
 let OfflineOrder: boolean = false;
+let uploadToDbForUseEffect: boolean = false;
+let adminsOnline: boolean = false;
 
-const socket = io("http://localhost:5000");
+export const socket = io("http://localhost:5000");
+
+type PropsType = {
+  globalPath: string;
+  shoppingBasket: basketProductType[];
+  setShoppingBasket: React.Dispatch<React.SetStateAction<basketProductType[]>>;
+};
 
 export default function CheckOut({
   shoppingBasket,
   setShoppingBasket,
   globalPath,
-}: {
-  globalPath: string;
-  shoppingBasket: basketProductType[];
-  setShoppingBasket: React.Dispatch<React.SetStateAction<basketProductType[]>>;
-}) {
-  const basketCounter = shoppingBasket?.length || 0;
+}: PropsType): JSX.Element {
+  const basketCounter = shoppingBasket.length;
 
   const { loginStatus }: { loginStatus: LoggedInState; getLoginStatus: () => Promise<void> } =
     useContext(AuthContext);
 
-  const [countdownAfterCheckoutCounter, setCountdownAfterCheckoutCounter] = useState<number>(60);
-  const [countdownToRedirect, setCountdownToRedirect] = useState<number>(10);
+  const [finalCountdown, setFinalCountdown] = useState<number>(initCountdown);
   const [orderStatus, setOrderStatus] = useState<string>("not-ordered");
   const [shopData, setShopData] = useState<ShopObjectJSONType>(ShopDataInit);
-  const [state, dispatch] = useReducer(reducer, initialState);
+  const [selectorState, dispatch] = useReducer(reducer, initialState);
   const [orderId, setOrderId] = useState<string>("");
 
   const navigate = useNavigate();
   const shopId = useParams().shop_id;
-  const newSelectorArray: scheduleCheckoutObjectType[] = generateSelector(shoppingBasket);
-
-  let dataBody: orderToDb = {
-    shopId: parseInt(shopId || "0"),
-    userId: loginStatus.id,
-    userName: loginStatus.username || "none",
-    mdp: state.inputMdpSelector,
-    mdv: state.inputMdvSelector,
-    deliveryTime: correctDBPickingUpDate(state.inputTimeSelector),
-    deliveryAddr: state.inputAddrSelector,
-    status: "processing",
-    content: shoppingBasket.map((item) => {
-      let copy: any = { ...item };
-      delete copy.shopUpcomingSessions;
-      return copy;
-    }),
-  };
+  const newSelectorArray: scheduleCheckoutObjectType[] = generateSelector(
+    shoppingBasket,
+    basketCounter
+  );
+  let dataBody: orderToDb = getLatesOrderData();
 
   async function getShopData(shopId: number): Promise<void> {
     try {
@@ -81,18 +83,18 @@ export default function CheckOut({
     }
   }
 
-  function reducer(state: SelectorType, action: any): SelectorType {
+  function reducer(selectorState: SelectorType, action: any): SelectorType {
     switch (action.type) {
       case Selector.time:
-        return { ...state, inputTimeSelector: action.payload };
+        return { ...selectorState, inputTimeSelector: action.payload };
       case Selector.mdp:
-        return { ...state, inputMdpSelector: action.payload };
+        return { ...selectorState, inputMdpSelector: action.payload };
       case Selector.mdv:
-        return { ...state, inputMdvSelector: action.payload };
+        return { ...selectorState, inputMdvSelector: action.payload };
       case Selector.addr:
-        return { ...state, inputAddrSelector: action.payload };
+        return { ...selectorState, inputAddrSelector: action.payload };
       default:
-        return state;
+        return selectorState;
     }
   }
 
@@ -102,228 +104,13 @@ export default function CheckOut({
     let timePart: string = inputTimeSelector.slice(inputTimeSelector.indexOf("|") || 3);
     let dayPart: string = inputTimeSelector.slice(0, inputTimeSelector.indexOf("|") || 3);
     if (dayPart.length > 4) {
-      //console.log("yes corrected");
       return today + timePart;
     }
     return dayPart + timePart;
   }
 
-  async function handleOrder(): Promise<void> {
-    setCountdownAfterCheckoutCounter(10);
-    setCountdownToRedirect(20);
-    setOrderStatus("waiting for admin confirmation");
-    startCountingToConfirm = true;
-    dataBody = {
-      shopId: shoppingBasket[0].shopId,
-      userId: loginStatus.id,
-      userName: loginStatus.username || "none",
-      mdp: state.inputMdpSelector,
-      mdv: state.inputMdvSelector,
-      deliveryTime: correctDBPickingUpDate(state.inputTimeSelector),
-      deliveryAddr: state.inputAddrSelector,
-      status: "processing",
-      content: shoppingBasket.map((item) => {
-        let copy: any = { ...item };
-        delete copy.shopUpcomingSessions;
-        return copy;
-      }),
-    };
-    orderContentToDb = dataBody;
-    console.log("when ordering", dataBody);
-    setShoppingBasket([]);
-    socket.emit("checkout-prompt-from-client", dataBody);
-  }
-
-  function add15Min(h: number, m: number): { h: number; m: number } {
-    let M, H;
-    if (m < 45) {
-      M = m + 15;
-      H = h;
-    } else {
-      // m>=45
-      if (h < 23) {
-        M = m - 45; //-(45-m)
-        H = h + 1;
-      } else {
-        // h>=23
-        M = m - 45; //-(45-m)
-        H = h - 23;
-      }
-    }
-    return { h: H, m: M };
-  }
-
-  function checkIfTimeInSchedule(
-    singleSession: scheduleObjectType,
-    h: number = -1,
-    m: number = -1
-  ): boolean {
-    const d = new Date();
-    // if no time giver , it will compare it to current time
-    const hoursNow = d.getHours();
-    const minutesNow = d.getMinutes();
-
-    const hoursToCompare = h === -1 ? hoursNow : h; // hours given as parameters
-    const minutesToCompare = h === -1 ? minutesNow : m;
-
-    if (singleSession) {
-      if (singleSession.startH < hoursToCompare && hoursToCompare < singleSession.endH) return true;
-      if (
-        // time is 9:10 // session 9:20 =>9:30
-        singleSession.startH === hoursToCompare &&
-        hoursToCompare < singleSession.endH &&
-        singleSession.startM > minutesToCompare
-      )
-        return false;
-      if (
-        // time is 9:10 // session 8:20 =>9:30
-        singleSession.startH < hoursToCompare &&
-        hoursToCompare == singleSession.endH &&
-        singleSession.endM > minutesToCompare
-      )
-        return true;
-      if (
-        // time is 8:30 // session 8:20 =>9:30
-        singleSession.startH == hoursToCompare &&
-        hoursToCompare < singleSession.endH &&
-        singleSession.startM < minutesToCompare
-      )
-        return true;
-      if (
-        // time is 8:30 // session 8:20 =>8:30
-        singleSession.startH == hoursToCompare &&
-        hoursToCompare === singleSession.endH &&
-        singleSession.startM < minutesToCompare &&
-        singleSession.endM <= minutesToCompare
-      )
-        return true;
-      if (
-        // time is 8:30 // session 7:20 =>8:30
-        singleSession.startH < hoursToCompare &&
-        hoursToCompare === singleSession.endH &&
-        singleSession.endM >= minutesToCompare
-      )
-        return true;
-      if (
-        // time 15:45 // session 15:10=>15:40
-        singleSession.startH <= hoursToCompare &&
-        hoursToCompare === singleSession.endH &&
-        singleSession.endM < minutesToCompare
-      )
-        return false;
-      if (
-        // time 15:45 // session 15:10=>15:48
-        singleSession.startH === hoursToCompare &&
-        hoursToCompare === singleSession.endH &&
-        singleSession.endM > minutesToCompare &&
-        singleSession.startM < minutesToCompare
-      )
-        return true;
-    }
-    return false;
-  }
-
-  function generateSelector(shoppingBasket: basketProductType[]): scheduleCheckoutObjectType[] {
-    const selectorArray: scheduleCheckoutObjectType[] = [];
-    if (basketCounter) {
-      const { shopUpcomingSessions } = shoppingBasket[0];
-      //console.log(shopUpcomingSessions);
-      const { day } = shopUpcomingSessions;
-      for (const schedule of shopUpcomingSessions.schedule) {
-        let newItems: scheduleCheckoutObjectType[] = getArraysOf15Minutes(schedule, day);
-        selectorArray.push(...newItems);
-      }
-    }
-    // update init value only if array[0] exist
-    return selectorArray;
-  }
-
-  function getArraysOf15Minutes(
-    schedule: scheduleObjectType,
-    day: string
-  ): scheduleCheckoutObjectType[] {
-    const d = new Date();
-    const hoursNow = d.getHours();
-    const minutesNow = d.getMinutes();
-    const timeAfter15M = add15Min(hoursNow, minutesNow);
-    const isCurrentTimeInSchedule = checkIfTimeInSchedule(schedule, hoursNow, minutesNow);
-    const isCurrentTimePlus15InSchedule = checkIfTimeInSchedule(
-      schedule,
-      timeAfter15M.h,
-      timeAfter15M.m
-    );
-    let arrayStartH = 0;
-    let arrayStartM = 0;
-    const arrayOf15Minutes: scheduleCheckoutObjectType[] = [];
-
-    if (isCurrentTimePlus15InSchedule) {
-      arrayStartH = hoursNow;
-      arrayStartM = minutesNow;
-    } else if (isCurrentTimeInSchedule) {
-      //current time in schedule but shop will be closed in less than 15m
-      arrayStartH = -2;
-      arrayStartM = -2;
-    } else {
-      // shop is closed now
-      arrayStartH = schedule.startH;
-      arrayStartM = schedule.startM;
-    }
-    let condition = true;
-    let newItemTime: { h: number; m: number };
-
-    while (condition) {
-      if (!arrayOf15Minutes.length) {
-        // first element
-        if (arrayStartH === -2) break; // skip this element
-        newItemTime = add15Min(arrayStartH, arrayStartM);
-        let con = checkIfTimeInSchedule(schedule, newItemTime.h, newItemTime.m);
-        if (con) {
-          let newItem: scheduleCheckoutObjectType = {
-            day: day,
-            hours: newItemTime.h,
-            minutes: newItemTime.m,
-          };
-          arrayOf15Minutes.push(newItem);
-        } else {
-          // first item cant be put in the array
-          // keep adding temp time until its out of schedule or "inside again?? i don't think so"
-          arrayStartH = newItemTime.h;
-          arrayStartM = newItemTime.m;
-          if (arrayStartH > schedule.endH || arrayStartH) break;
-        }
-      } else {
-        // already elements in the array : adding depends on the last element
-        let lastItemHours = arrayOf15Minutes.at(-1)?.hours || 0;
-        let lastItemMinutes = arrayOf15Minutes.at(-1)?.minutes || 0;
-        newItemTime = add15Min(lastItemHours, lastItemMinutes);
-        const con = checkIfTimeInSchedule(schedule, newItemTime.h, newItemTime.m);
-        if (con) {
-          let newItem: scheduleCheckoutObjectType = {
-            day: day,
-            hours: newItemTime.h,
-            minutes: newItemTime.m,
-          };
-          arrayOf15Minutes.push(newItem);
-        } else break;
-      }
-    }
-    return arrayOf15Minutes;
-  }
-
-  async function ConfirmOrder(interval: any): Promise<void> {
-    setOrderStatus(""); // to avoid redoing this fn again ( i had double uploads to db)
-    if (interval) clearInterval(interval);
-    setCountdownAfterCheckoutCounter(-1);
-    await sendOrderToDb();
-  }
-
-  function CancelOrder(interval: any): void {
-    if (interval) clearInterval(interval);
-    setCountdownAfterCheckoutCounter(-1);
-    setOrderStatus("Order declined by admin, shop is probably busy");
-  }
-
-  async function sendOrderToDb() {
+  async function sendOrderToDb(orderStatus: string = "", changeOrderStatus: boolean = true) {
+    orderContentToDb.status = orderStatus || "pending confirmation";
     try {
       const res = await fetch(globalPath + "/api/order/newOrder", {
         method: "POST",
@@ -336,141 +123,200 @@ export default function CheckOut({
         },
       });
       const reply = await res.json();
-      setOrderStatus(`order id : ${reply[0].order_id} has been confirmed , delivery time : ${reply[0].delivery_time}
-      order full date: ${reply[0].created_at}`);
+      changeOrderStatus &&
+        setOrderStatus(`order id : ${reply[0].order_id} has been confirmed ,
+          delivery time : ${reply[0].delivery_time}
+         order full date: ${reply[0].created_at}
+         `);
     } catch (error) {
       console.log(error);
     }
   }
 
-  async function listenToAdminOrderConfirmation(): Promise<void> {
+  function listenToAdminSockets(): void {
     socket.on(
       "admins-availability",
-      (onlineAdmins: string[], orderId: string, acceptOrderIfNoOnlineAdmin: boolean) => {
+      (onlineAdmins: string[], acceptOrderIfNoOnlineAdmin: boolean) => {
         //console.log("admins-availability :", onlineAdmins);
+        adminsOnline = !!onlineAdmins.length;
+        console.log("offline order", acceptOrderIfNoOnlineAdmin);
         if (onlineAdmins.length || acceptOrderIfNoOnlineAdmin) {
           OfflineOrder = acceptOrderIfNoOnlineAdmin;
-          setOrderId(orderId);
-        } else {
-          CancelOrder(0);
-          setOrderStatus("Sorry , no admin is online to handle your Order");
-          startCountingToRedirect = true;
         }
       }
     );
+    socket.on("order-id-for-client", (orderIdFromBackend: string) => {
+      setOrderId(orderIdFromBackend);
+    });
+    socket.on("order-confirmation-to-user", (isAccepted: boolean) => {
+      const acceptedOrDeclinedAlready = orderStatus === "accepted" || orderStatus === "declined";
+      let isOrdered = orderStatus !== "not-ordered";
+      const orderCanceledAlready: boolean =
+        orderStatus == "order canceled successfully by your request";
+      // accept or decline one single time
 
-    socket.on("order-confirmation-to-user", (isAccepted: boolean, clientId) => {
-      setOrderStatus(isAccepted ? "accepted" : "declined");
+      if (
+        acceptedOrDeclinedAlready === false &&
+        orderCanceledAlready === false &&
+        isOrdered === true
+      ) {
+        setFinalCountdown(redirectingTimeout - 1);
+        if (isAccepted === true) {
+          uploadToDbForUseEffect = true;
+          setShoppingBasket([]); // empty basket only if accepted
+          setOrderStatus("accepted");
+        } else {
+          setOrderStatus("declined");
+        }
+      }
     });
   }
 
+  function getLatesOrderData(): orderToDb {
+    return {
+      shopId: parseInt(shopId || "0"),
+      userId: loginStatus.id,
+      userName: loginStatus.username || "none",
+      mdp: selectorState.inputMdpSelector,
+      mdv: selectorState.inputMdvSelector,
+      deliveryTime: correctDBPickingUpDate(selectorState.inputTimeSelector),
+      deliveryAddr: selectorState.inputAddrSelector,
+      status: "processing",
+      content: shoppingBasket.map((item) => {
+        let copy: any = { ...item };
+        delete copy.shopUpcomingSessions;
+        return copy;
+      }),
+    };
+  }
+
   function CancelOrderAfterConfirmation(): void {
-    socket.emit("cancel-order-after-sent", orderId, shopId);
+    socket.emit("from-client--cancel-order-after-sent", orderId, shopId);
+    setOrderStatus("order canceled successfully by your request");
+    setFinalCountdown(redirectingTimeout);
+  }
+
+  async function handleOrder(): Promise<void> {
+    dataBody = getLatesOrderData();
+    orderContentToDb = dataBody;
+    console.log("when ordering", dataBody);
+    startCounting = true;
+    if (adminsOnline) {
+      setFinalCountdown(initCountdown);
+      socket.emit("checkout-prompt-from-client", dataBody);
+      setOrderStatus("waiting for admin confirmation");
+      return;
+    }
+
+    if (!adminsOnline && OfflineOrder) {
+      await sendOrderToDb("pending confirmation");
+      setFinalCountdown(redirectingTimeout);
+      setOrderStatus((prev) => prev + "\n no admin were online , your order was Auto-completed");
+      setShoppingBasket([]);
+      return;
+    }
+    if (!adminsOnline && !OfflineOrder) {
+      setFinalCountdown(redirectingTimeout);
+      setOrderStatus("Sorry , no admin is online to handle your Order , try again later");
+      return;
+    }
   }
 
   useEffect(() => {
-    startCountingToRedirect = false;
-    startCountingToConfirm = false;
+    socket.emit("from-client--req-admins-array", shopId);
+  }, [shoppingBasket]);
 
-    shoppingBasket.length && getShopData(shoppingBasket[0].shopId);
+  useEffect(() => {
+    if (uploadToDbForUseEffect === true) sendOrderToDb("accepted", false);
+    uploadToDbForUseEffect = false;
+  }, [uploadToDbForUseEffect]);
 
-    if (newSelectorArray.length) {
+  useEffect(() => {
+    if (shoppingBasket.length !== 0) {
+      getShopData(shoppingBasket[0].shopId);
+    }
+    if (newSelectorArray.length !== 0) {
+      // arr variable: just to make the next payload line clear
       let arr = newSelectorArray;
-      // just to make the next payload line clear
       dispatch({
         type: Selector.time,
         payload: `${arr[0].day} | ${arr[0].hours} : ${arr[0].minutes}`,
       });
     }
-    return () => {};
   }, []);
 
   useEffect(() => {
     socket.connect();
-
+    listenToAdminSockets();
     return () => {
       socket.disconnect();
     };
   }, []);
 
-  socket.on("pending-order-canceling-confirmation-to-checkout", (canceledOrderId: string) => {
-    console.log("compare", orderId, canceledOrderId);
-    console.log("to ", canceledOrderId);
-    if (orderId == canceledOrderId) {
-      console.log("canceled");
-      CancelOrder(0);
-      setOrderStatus("order canceled successfully by your request");
-      startCountingToRedirect = true;
+  function manageOrderStatesAfterConfirmation() {
+    console.log(orderStatus);
+    const waitingAdmin = orderStatus === "waiting for admin confirmation";
+    const acceptedOrDeclined = orderStatus === "accepted" || orderStatus === "declined";
+    let ordered = orderStatus !== "not-ordered";
+
+    if (ordered && waitingAdmin && finalCountdown <= redirectingTimeout && !acceptedOrDeclined) {
+      // SWITCHING FROM WAITING ADMIN TIME TO REDIRECTING when admins are online
+      //will be executed one single time cuz status will change here
+      console.log("everything is here");
+      if (!OfflineOrder) setOrderStatus("admin didn't respond , order canceled");
+      if (OfflineOrder) {
+        // he waited but order still considered offline order ! auto completed
+        sendOrderToDb("pending confirmation");
+        setOrderStatus(
+          (prev) => prev + "\n order AUTO COMPLETED , admin didn't respond , shop is probably busy"
+        );
+        setShoppingBasket([]);
+      }
     }
-  });
+  }
 
   useEffect(() => {
     let interval: any;
-    if (startCountingToConfirm) {
+    if (startCounting) {
       interval = setInterval(() => {
-        if (countdownAfterCheckoutCounter < 1 && !OfflineOrder) {
-          //timeout waiting for admin response
-          setCountdownToRedirect(10); // less redirect waiting time
-          setOrderStatus("admin didn't respond , order canceled");
-          startCountingToRedirect = true;
-        }
-        if (countdownAfterCheckoutCounter < 1 && OfflineOrder) {
-          //timeout waiting for admin response
-          setCountdownToRedirect(10); // less redirect waiting time
-          setOrderStatus("order AUTO COMPLETED, delivery delays may occurs ");
-          startCountingToRedirect = true;
-          setTimeout(() => {
-            orderContentToDb.status = "pending confirmation";
-            sendOrderToDb();
-          }, 6000);
-        }
-        setCountdownAfterCheckoutCounter((seconds: number) => seconds - 1);
-      }, 1000);
-      listenToAdminOrderConfirmation();
-      if (orderStatus === "declined") CancelOrder(interval);
-      if (orderStatus === "accepted") ConfirmOrder(interval);
-    }
-
-    if (countdownAfterCheckoutCounter < 0) clearInterval(interval);
-    return () => clearInterval(interval);
-  }, [startCountingToConfirm, countdownAfterCheckoutCounter]);
-
-  useEffect(() => {
-    let interval: any;
-    if (startCountingToRedirect) {
-      interval = setInterval(() => {
-        if (countdownToRedirect < 1) {
-          navigate(-1);
-        }
-        if (countdownToRedirect < 0) {
-          // counter -1 : backup method !
-          // navigate(-1) wont work if the checkout is opened in new window/tab
-          // i still need to fix this store id
+        manageOrderStatesAfterConfirmation();
+        // redirecting
+        if (finalCountdown < 1) navigate(-1);
+        if (finalCountdown < 0) {
+          // counter -1 : backup method ! navigate(-1) wont work if the checkout is opened in new window/tab
           navigate(/*i need to fix this /1:storeId/ to be dynamic*/ "/1/shops/" + shopId);
         }
-
-        setCountdownToRedirect((seconds: number) => seconds - 1);
+        //
+        setFinalCountdown((seconds: number) => seconds - 1);
       }, 1000);
     }
+    if (finalCountdown < 0) clearInterval(interval);
     return () => clearInterval(interval);
-  }, [startCountingToRedirect, countdownToRedirect, countdownAfterCheckoutCounter < 1]);
+  }, [startCounting, finalCountdown]);
+
+  // conditions
+  let isOrdered = orderStatus !== "not-ordered";
+  const isBasketEmpty = basketCounter <= 0;
 
   return (
     <main id="checkout-main-root-container">
-      {basketCounter > 0 && <IfLoggedINRender />}
-      {basketCounter <= 0 && orderStatus === "not-ordered" && <h1>empty card</h1>}
-      <OrderFilled />
+      {/*  not ordered yet and there are items => table Order details are shown if client logged in */}
+      {isOrdered === false && isBasketEmpty === false && <TableOrderDetailsOrLogin />}
+      {/*  not ordered yet and there are no items => empty card */}
+      {isOrdered === false && isBasketEmpty === true && <h1>empty card</h1>}
+      {/* ordered */}
+      {isOrdered === true && finalCountdown > redirectingTimeout && <WaitingAdminConfirmation />}
+      {isOrdered === true && finalCountdown <= redirectingTimeout && <RedirectingAfterCountdown />}
     </main>
   );
-  function OrderFilled(): JSX.Element {
-    if (orderStatus == "not-ordered") return <></>; // nothing
-    if (countdownAfterCheckoutCounter < 1) return <RedirectingAfterCountdown />;
+
+  function WaitingAdminConfirmation(): JSX.Element {
     return (
       <div>
         <h1>waiting for admin confirmation</h1>
         <h3>
           otherwise,order will be {OfflineOrder ? "auto-completed" : "canceled"} in{" "}
-          {countdownAfterCheckoutCounter}
+          {finalCountdown - redirectingTimeout}
         </h3>
         <h3>don't close this page or order will be canceled</h3>
         <button onClick={CancelOrderAfterConfirmation}>cancel order</button>
@@ -481,9 +327,11 @@ export default function CheckOut({
   function RedirectingAfterCountdown(): JSX.Element {
     return (
       <div>
-        <h3>{orderStatus}</h3>
+        {orderStatus === "accepted" && "Order accepted by admin"}
+        {orderStatus === "declined" && "Order declined by admin, shop is probably busy"}
+        {orderStatus !== "declined" && orderStatus !== "accepted" && <h3>{orderStatus}</h3>}
         <p onClick={() => navigate(-1)} className="link">
-          you will go back to shop in {countdownToRedirect}
+          you will go back to shop in {finalCountdown}
         </p>
 
         <p
@@ -498,13 +346,13 @@ export default function CheckOut({
     );
   }
 
-  function IfLoggedINRender(): JSX.Element {
+  function TableOrderDetailsOrLogin(): JSX.Element {
     return loginStatus.isLoggedIn ? (
       <OrderTableFilled
         setShoppingBasket={setShoppingBasket}
         dispatch={dispatch}
         newSelectorArray={newSelectorArray}
-        state={state}
+        selectorState={selectorState}
         shopData={shopData}
         basketCounter={basketCounter}
         handleOrder={handleOrder}

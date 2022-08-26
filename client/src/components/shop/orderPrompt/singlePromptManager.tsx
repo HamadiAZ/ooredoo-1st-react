@@ -75,8 +75,13 @@ export default function SinglePromptManager({
 
       if (promptCountDown < 0 && orderStatus !== "accepted" && orderStatus !== "declined") {
         clearInterval(interval);
-        !autoAcceptSetting && handleDeclineOrder();
-        autoAcceptSetting && handleAcceptOrder();
+        !autoAcceptSetting && setOrderStatus("auto declined");
+        autoAcceptSetting && setOrderStatus("auto accepted");
+        setTimeout(() => {
+          handleHidePrompt(orderId);
+          setShowOrderConfirmationPrompt(false);
+          setOrderStatus("not-ordered");
+        }, 4000);
       }
     }
     return () => clearInterval(interval);

@@ -39,8 +39,9 @@ export default function Orders() {
 
   async function handleDeleteItem(item: orderFromDb): Promise<void> {
     try {
-      const res = await fetch(globalPath + "/api/admin/DeleteOrder/" + item.order_id, {
+      const res = await fetch(globalPath + "/api/client/DeleteOrder/" + item.order_id, {
         method: "PUT",
+        body: JSON.stringify({ client_id: loginStatus.id }),
         credentials: "include",
         headers: {
           Accept: "application/json",
@@ -57,7 +58,7 @@ export default function Orders() {
 
   async function autoCancelOldOrders(): Promise<void> {
     let ordersUpdated = false;
-    console.log(orders);
+    // console.log(orders);
     let ordersCopy: orderFromDb[] = orders.map((order: orderFromDb) => {
       if (!checkOrderPickupTime(order) && order.status === "pending confirmation") {
         const orderCopy: orderFromDb = { ...order };
@@ -67,7 +68,7 @@ export default function Orders() {
       }
       return order;
     });
-    console.log("71", ordersUpdated, ordersCopy);
+
     //if there is a modification => update db also
     if (!ordersUpdated) return;
     const updatedOrders = ordersCopy.filter((order) => order.status === "auto Canceled");

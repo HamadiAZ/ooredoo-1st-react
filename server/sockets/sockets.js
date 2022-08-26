@@ -68,6 +68,14 @@ module.exports = async function (io) {
       socket.emit("here-are-your-pending-orders-admin", pendingShopOrders);
     });
 
+    socket.on("from-client--req-admins-array", (shopId) => {
+      //response of admins availability
+      // if front i will check if onlineAdmins of this shop=[] then no admin is online
+      const onlineAdminsOfRequestedShop = onlineAdmins.filter((item) => item[1] == shopId);
+      console.log("requested admins array", onlineAdminsOfRequestedShop);
+      socket.emit("admins-availability", onlineAdminsOfRequestedShop, acceptOrderIfNoOnlineAdmin);
+    });
+
     socket.on("checkout-prompt-from-client", (data) => {
       const { shopId } = data;
       orderId = uuid();
@@ -91,17 +99,8 @@ module.exports = async function (io) {
               acceptOrderIfNoOnlineAdmin
             );
       });
-
-      //response of admins availability
-      // if front i will check if onlineAdmins of this shop=[] then no admin is online
-      const onlineAdminsOfRequestedShop = onlineAdmins.filter((item) => item[1] == shopId);
-      console.log("requested admins array", onlineAdminsOfRequestedShop);
-      socket.emit(
-        "admins-availability",
-        onlineAdminsOfRequestedShop,
-        orderId,
-        acceptOrderIfNoOnlineAdmin
-      );
+      //send order id back to client
+      socket.emit("order-id-for-client", orderId);
     });
 
     socket.on("order-confirmation", (isConfirmed, clientId, orderId, shopId) => {
@@ -110,11 +109,10 @@ module.exports = async function (io) {
       if (con) {
         deletePendingOrder(shopId, orderId); // finished
       }
-
       console.log(pendingOrders);
     });
 
-    socket.on("cancel-order-after-sent", (orderId, shopId) => {
+    socket.on("from-client--cancel-order-after-sent", (orderId, shopId) => {
       console.log("cancel : ", orderId);
       const con = !isShopAdminOnline(shopId) && acceptOrderIfNoOnlineAdmin;
       if (con) {
@@ -125,9 +123,7 @@ module.exports = async function (io) {
         if (shopId == adminInfo[1])
           socket.to(adminInfo[0]).emit("cancel-pending-order-admin", orderId, socket.id);
       });
-      socket.emit("pending-order-canceling-confirmation-to-checkout", orderId);
     });
-
     socket.on("pending-order-canceling-confirmation", (orderId, clientId) => {
       socket.to(clientId).emit("pending-order-canceling-confirmation-to-checkout", orderId);
     });
