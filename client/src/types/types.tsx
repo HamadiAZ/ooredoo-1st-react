@@ -100,6 +100,7 @@ export type singleProductObjectType = {
   type: "product";
   price: number;
 };
+
 export type subMenuObjectType = {
   manufacture: string;
   products: singleProductObjectType[];
@@ -153,6 +154,7 @@ export type orderContentType = {
   shopId: number;
   status: string;
 };
+
 export type orderToDb = {
   shopId: number;
   userId: number;
@@ -164,6 +166,7 @@ export type orderToDb = {
   status: string;
   content: orderContentType[];
 };
+
 export type orderFromDb = {
   order_id: number;
   shop_id: number;

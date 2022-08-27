@@ -1,18 +1,28 @@
-const { v4: uuid } = require("uuid");
-const pool = require("../db");
-const router = require("express").Router();
+//const { v4: uuid } = require("uuid");
+import { IOType } from "child_process";
+import { Socket } from "socket.io";
+import { IOptions } from "socketio-jwt";
+import { pool } from "../db";
+import { v4 as uuid } from "uuid";
+import {
+  onlineAdminType,
+  orderFromDb,
+  orderToDb,
+  pendingOrdersType,
+  shopPendingOrder,
+} from "../types/types";
 
 //parameters
 const acceptOrderIfNoOnlineAdmin = true;
 
 // variables
-let onlineAdmins = [];
+let onlineAdmins: onlineAdminType[] = [];
 // [   [ADMINsocketID,ShopID] , [ADMINsocketID,ShopID] ...]
 
-let clientsWithPendingOrders = [];
+let clientsWithPendingOrders: pendingOrdersType[] = [];
 // [   [clientId,orderId,shopId] , [clientId,orderID,shopId] ...]
 
-let pendingOrders = {};
+let pendingOrders: { [key: number]: shopPendingOrder[] } = {};
 /* structure will be {
      shopId : [pending orders array],
     
@@ -26,13 +36,11 @@ let pendingOrders = {};
 
   } */
 
-module.exports = async function (io) {
-  //
+module.exports = async function (io: Socket) {
   io.on("connection", async (socket) => {
-    //
     socket.on("disconnect", function () {
       // if its admin : delete it from the onlineAdmins
-      let userType = "user";
+      let userType: string = "user";
       onlineAdmins = onlineAdmins.filter((onlineAdmin) => {
         if (onlineAdmin[0] === socket.id) userType = "admin";
         return onlineAdmin[0] != socket.id;
@@ -58,7 +66,7 @@ module.exports = async function (io) {
       console.log(`disconnected ${userType} id :`, socket.id);
     });
 
-    socket.on("shop-admin-is-online", async (shopId) => {
+    socket.on("shop-admin-is-online", async (shopId: number) => {
       // setting online admins array
       onlineAdmins = onlineAdmins.filter((admin) => admin[0] != socket.id);
       onlineAdmins.push([socket.id, shopId]);
@@ -68,7 +76,7 @@ module.exports = async function (io) {
       socket.emit("here-are-your-pending-orders-admin", pendingShopOrders);
     });
 
-    socket.on("from-client--req-admins-array", (shopId) => {
+    socket.on("from-client--req-admins-array", (shopId: number) => {
       //response of admins availability
       // if front i will check if onlineAdmins of this shop=[] then no admin is online
       const onlineAdminsOfRequestedShop = onlineAdmins.filter((item) => item[1] == shopId);
@@ -76,9 +84,9 @@ module.exports = async function (io) {
       socket.emit("admins-availability", onlineAdminsOfRequestedShop, acceptOrderIfNoOnlineAdmin);
     });
 
-    socket.on("checkout-prompt-from-client", (data) => {
+    socket.on("checkout-prompt-from-client", (data: orderToDb) => {
       const { shopId } = data;
-      orderId = uuid();
+      const orderId: string = uuid();
       const con = !isShopAdminOnline(shopId) && acceptOrderIfNoOnlineAdmin;
       if (con) {
         addOrderToPendingOrders(orderId, shopId, socket.id, data);
@@ -103,43 +111,50 @@ module.exports = async function (io) {
       socket.emit("order-id-for-client", orderId);
     });
 
-    socket.on("order-confirmation", (isConfirmed, clientId, orderId, shopId) => {
-      socket.to(clientId).emit("order-confirmation-to-user", isConfirmed);
-      const con = !isShopAdminOnline(shopId) && acceptOrderIfNoOnlineAdmin;
-      if (con) {
-        deletePendingOrder(shopId, orderId); // finished
+    socket.on(
+      "order-confirmation",
+      (isConfirmed: boolean, clientId: number, orderId: string, shopId: number) => {
+        socket.to(clientId).emit("order-confirmation-to-user", isConfirmed);
+        const con = !isShopAdminOnline(shopId) && acceptOrderIfNoOnlineAdmin;
+        if (con) {
+          deletePendingOrder(shopId, orderId); // finished
+        }
       }
-      console.log(pendingOrders);
-    });
+    );
 
-    socket.on("from-client--cancel-order-after-sent", (orderId, shopId) => {
+    socket.on("from-client--cancel-order-after-sent", (orderId: string, shopId: number) => {
       console.log("cancel : ", orderId);
       const con = !isShopAdminOnline(shopId) && acceptOrderIfNoOnlineAdmin;
       if (con) {
         deletePendingOrder(shopId, orderId); // finished
       }
-      console.log(pendingOrders);
+
       onlineAdmins.forEach((adminInfo) => {
         if (shopId == adminInfo[1])
           socket.to(adminInfo[0]).emit("cancel-pending-order-admin", orderId, socket.id);
       });
     });
-    socket.on("pending-order-canceling-confirmation", (orderId, clientId) => {
+    socket.on("pending-order-canceling-confirmation", (orderId: string, clientId: number) => {
       socket.to(clientId).emit("pending-order-canceling-confirmation-to-checkout", orderId);
     });
   });
 };
 
-function isShopAdminOnline(shopId) {
-  isOnline = false;
+function isShopAdminOnline(shopId: number) {
+  let isOnline: boolean = false;
   onlineAdmins.forEach((item) => {
     if (item[1] == shopId) isOnline = true;
   });
   return isOnline;
 }
 
-function addOrderToPendingOrders(orderId, shopId, clientId, data) {
-  const newOrder = {
+function addOrderToPendingOrders(
+  orderId: string,
+  shopId: number,
+  clientId: number,
+  data: orderToDb
+) {
+  const newOrder: shopPendingOrder = {
     id: orderId,
     shopId,
     clientId,
@@ -154,7 +169,26 @@ function addOrderToPendingOrders(orderId, shopId, clientId, data) {
   }
 }
 
-function getPendingOrdersForShop(shopId) {
+async function getPendingOrdersForShopFromDb(shopId: number) {
+  try {
+    const data: any = await pool.query(
+      `select * from orders where "shop_id"='${shopId}' AND "status"='pending confirmation'`
+    );
+    const rows: orderFromDb = data.rows;
+    return rows;
+  } catch (error: any) {
+    console.error(error.message);
+  }
+}
+
+function deletePendingOrder(shopId: number, orderId: string) {
+  if (pendingOrders[shopId]?.length >= 0) {
+    pendingOrders[shopId] = pendingOrders[shopId].filter((order) => order.id != orderId);
+  } else {
+    console.log("something went wrong, order already deleted ??");
+  }
+}
+/* function getPendingOrdersForShop(shopId) {
   if (pendingOrders[shopId]?.length >= 0) {
     //  array of shop orders already defined
     return pendingOrders[shopId];
@@ -162,23 +196,4 @@ function getPendingOrdersForShop(shopId) {
     // undefined
     return [];
   }
-}
-
-async function getPendingOrdersForShopFromDb(shopId) {
-  try {
-    data = await pool.query(
-      `select * from orders where "shop_id"='${shopId}' AND "status"='pending confirmation'`
-    );
-    return data.rows;
-  } catch (error) {
-    console.error(error.message);
-  }
-}
-
-function deletePendingOrder(shopId, orderId) {
-  if (pendingOrders[shopId]?.length >= 0) {
-    pendingOrders[shopId] = pendingOrders[shopId].filter((order) => order.id != orderId);
-  } else {
-    console.log("something went wrong, order already deleted ??");
-  }
-}
+} */

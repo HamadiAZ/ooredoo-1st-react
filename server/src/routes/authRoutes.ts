@@ -1,15 +1,17 @@
-const router = require("express").Router();
-const jwt = require("jsonwebtoken");
-const pool = require("../db");
-const bcrypt = require("bcrypt");
+import express, { Request, Response, Router } from "express";
+import jwt from "jsonwebtoken";
+import { pool } from "../db";
+import bcrypt from "bcrypt";
 
 const JWTpassword = "e98fZf4eGeEbergre2zaFSSFS81FF8FZ7e";
+
+const router = Router();
 
 router.post("/reg", async (req, res) => {
   try {
     let data = await req.body;
     //console.log(data);
-    let newUser = {};
+    let newUser: any = {};
     bcrypt.hash(data.password, 10, async (err, hash) => {
       if (err) console.log(err);
       newUser = await pool.query(`
@@ -35,7 +37,7 @@ router.post("/reg", async (req, res) => {
         res.cookie("token", token, cookieOptions).send({ username: newUser.rows[0].username });
       } else res.send({ username: "" });
     });
-  } catch (error) {
+  } catch (error: any) {
     res.send(JSON.stringify("error " + error.message));
     console.error(error.message);
   }
@@ -58,9 +60,7 @@ router.get("/loginStatus", async (req, res) => {
     if (!token) {
       res.status(200).send({ isLoggedIn: false, privilege: "user" });
     } else {
-      const verified = jwt.verify(token, JWTpassword);
-      const isAdmin = false;
-
+      const verified: any = jwt.verify(token, JWTpassword);
       // console.log(verified);
       let id = verified.userId;
       const user = await pool.query(`
@@ -118,7 +118,7 @@ router.post("/login", async (req, res) => {
       console.log("user doesnt  exist");
       res.send({ username: "" });
     }
-  } catch (error) {
+  } catch (error: any) {
     res.send(JSON.stringify("error " + error.message));
     console.error(error.message);
   }
@@ -134,7 +134,7 @@ router.get("/logout", (req, res) => {
     // the browser will delete it automatically
     // so we do date(0) somewhere in 1970 : in the past
     // its expired , will be deleted then
-  } catch (error) {
+  } catch (error: any) {
     res.send(JSON.stringify("error " + error.message));
     console.error(error.message);
   }
@@ -149,7 +149,7 @@ router.get(`/getMail:email`, async (req, res) => {
       `);
     //console.log(user.rows[0]);
     user.rows?.length ? res.send({ email: user.rows[0].email }) : res.send({ email: "" });
-  } catch (error) {
+  } catch (error: any) {
     res.send(JSON.stringify("error " + error.message));
     console.error(error.message);
   }
