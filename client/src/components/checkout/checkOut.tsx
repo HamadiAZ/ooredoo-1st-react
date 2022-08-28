@@ -9,7 +9,6 @@ import { generateSelector } from "./timeSelector";
 import {
   SelectorType,
   basketProductType,
-  scheduleObjectType,
   scheduleCheckoutObjectType,
   Selector,
   ShopObjectJSONType,
@@ -39,6 +38,7 @@ let orderContentToDb: orderToDb;
 let OfflineOrder: boolean = false;
 let uploadToDbForUseEffect: boolean = false;
 let adminsOnline: boolean = false;
+let uploaderToDbConfirmationInfo: string = "";
 
 export const socket = io("http://localhost:5000");
 
@@ -123,6 +123,10 @@ export default function CheckOut({
         },
       });
       const reply = await res.json();
+      uploaderToDbConfirmationInfo = `order id : ${reply[0].order_id} has been confirmed ,
+      delivery time : ${reply[0].delivery_time}
+     order full date: ${reply[0].created_at}
+     `;
       changeOrderStatus &&
         setOrderStatus(`order id : ${reply[0].order_id} has been confirmed ,
           delivery time : ${reply[0].delivery_time}
@@ -152,14 +156,14 @@ export default function CheckOut({
       const acceptedOrDeclinedAlready = orderStatus === "accepted" || orderStatus === "declined";
       let isOrdered = orderStatus !== "not-ordered";
       const orderCanceledAlready: boolean =
-        orderStatus == "order canceled successfully by your request";
+        orderStatus === "order canceled successfully by your request";
       // accept or decline one single time
-
       if (
         acceptedOrDeclinedAlready === false &&
         orderCanceledAlready === false &&
         isOrdered === true
       ) {
+        console.log("i went to status ", isAccepted);
         setFinalCountdown(redirectingTimeout - 1);
         if (isAccepted === true) {
           uploadToDbForUseEffect = true;
@@ -247,18 +251,20 @@ export default function CheckOut({
 
   useEffect(() => {
     socket.connect();
-    listenToAdminSockets();
     return () => {
       socket.disconnect();
     };
   }, []);
+
+  useEffect(() => {
+    listenToAdminSockets();
+  }, [, orderStatus]);
 
   function manageOrderStatesAfterConfirmation() {
     console.log(orderStatus);
     const waitingAdmin = orderStatus === "waiting for admin confirmation";
     const acceptedOrDeclined = orderStatus === "accepted" || orderStatus === "declined";
     let ordered = orderStatus !== "not-ordered";
-
     if (ordered && waitingAdmin && finalCountdown <= redirectingTimeout && !acceptedOrDeclined) {
       // SWITCHING FROM WAITING ADMIN TIME TO REDIRECTING when admins are online
       //will be executed one single time cuz status will change here
@@ -327,7 +333,12 @@ export default function CheckOut({
   function RedirectingAfterCountdown(): JSX.Element {
     return (
       <div>
-        {orderStatus === "accepted" && "Order accepted by admin"}
+        {orderStatus === "accepted" && (
+          <>
+            <h1>order accepted by admin</h1>
+            <h3>{!!uploaderToDbConfirmationInfo && uploaderToDbConfirmationInfo}</h3>
+          </>
+        )}
         {orderStatus === "declined" && "Order declined by admin, shop is probably busy"}
         {orderStatus !== "declined" && orderStatus !== "accepted" && <h3>{orderStatus}</h3>}
         <p onClick={() => navigate(-1)} className="link">

@@ -17,24 +17,10 @@ const acceptOrderIfNoOnlineAdmin = true;
 
 // variables
 let onlineAdmins: onlineAdminType[] = [];
-// [   [ADMINsocketID,ShopID] , [ADMINsocketID,ShopID] ...]
 
 let clientsWithPendingOrders: pendingOrdersType[] = [];
-// [   [clientId,orderId,shopId] , [clientId,orderID,shopId] ...]
 
 let pendingOrders: { [key: number]: shopPendingOrder[] } = {};
-/* structure will be {
-     shopId : [pending orders array],
-    
-    with every order of array :
-    { 
-      id:string
-      shopId:number
-      clientId:string
-      data: order db Body}
-    }
-
-  } */
 
 module.exports = async function (io: Socket) {
   io.on("connection", async (socket) => {

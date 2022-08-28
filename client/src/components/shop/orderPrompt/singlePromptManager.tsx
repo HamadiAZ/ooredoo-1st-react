@@ -53,7 +53,7 @@ export default function SinglePromptManager({
     //if already declined : this button wont do anything
     setPromptCountDown(57);
     startPromptCountDown = false;
-    socket.emit("order-confirmation", true, clientId);
+    socket.emit("order-confirmation", true, clientId, orderId, shopId);
     setOrderStatus("accepted");
     setTimeout(() => {
       handleHidePrompt(orderId);

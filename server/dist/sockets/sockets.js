@@ -15,22 +15,8 @@ const uuid_1 = require("uuid");
 const acceptOrderIfNoOnlineAdmin = true;
 // variables
 let onlineAdmins = [];
-// [   [ADMINsocketID,ShopID] , [ADMINsocketID,ShopID] ...]
 let clientsWithPendingOrders = [];
-// [   [clientId,orderId,shopId] , [clientId,orderID,shopId] ...]
 let pendingOrders = {};
-/* structure will be {
-     shopId : [pending orders array],
-    
-    with every order of array :
-    {
-      id:string
-      shopId:number
-      clientId:string
-      data: order db Body}
-    }
-
-  } */
 module.exports = function (io) {
     return __awaiter(this, void 0, void 0, function* () {
         io.on("connection", (socket) => __awaiter(this, void 0, void 0, function* () {
