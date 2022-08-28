@@ -105,7 +105,8 @@ app.get(`/api/getGalleryListOfStore/:id`, (req: Request, res: Response) => {
 //           shops apis /////////////////////////////////////////////////////////
 app.get("/api/getShops/:id_store", async (req: Request, res: Response) => {
   try {
-    const data = await pool.query(`select * from shops`);
+    const storeId: number = parseInt(req.params.id_store || "0");
+    const data = await pool.query(`select * from shops where "store_id"='${storeId}'`);
     const rows: ShopObjectFromDbType[] = data.rows;
     res.json(rows);
   } catch (error: any) {

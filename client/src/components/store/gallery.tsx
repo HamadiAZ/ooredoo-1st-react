@@ -60,16 +60,25 @@ export default function Gallery({
   }, [galleryCounter]);
 
   return (
-    <div className="image-gallery">
-      <img src={galleryCurrentImage} />
-      <div id="store-hidden-div--gallery-buttons-container">
-        <div className="arrows-leftandright-divs" onClick={(): void => updateImage("left")}>
-          <AiOutlineArrowLeft className="gallery-arrows" />
+    <>
+      {numberOfImages > 0 ? (
+        <div className="image-gallery">
+          <img src={galleryCurrentImage} />
+          <div id="store-hidden-div--gallery-buttons-container">
+            <div className="arrows-leftandright-divs" onClick={(): void => updateImage("left")}>
+              <AiOutlineArrowLeft className="gallery-arrows" />
+            </div>
+            <div className="arrows-leftandright-divs" onClick={(): void => updateImage("right")}>
+              <AiOutlineArrowRight className="gallery-arrows" />
+            </div>
+          </div>
         </div>
-        <div className="arrows-leftandright-divs" onClick={(): void => updateImage("right")}>
-          <AiOutlineArrowRight className="gallery-arrows" />
-        </div>
-      </div>
-    </div>
+      ) : (
+        <>
+          <h1> welcome to our store</h1>
+          <p>gallery isn't added yet</p>
+        </>
+      )}
+    </>
   );
 }

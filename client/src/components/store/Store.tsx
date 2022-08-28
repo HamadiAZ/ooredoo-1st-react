@@ -63,27 +63,36 @@ export default function Store({ globalPath }: { globalPath: string }): JSX.Eleme
   return (
     <main onClick={() => setSuggestionState(false)}>
       <Gallery storePath={storePath} store_id={store_id} />
-      <div id="store-location-search-container">
-        <h1>Nos magasins à proximité</h1>
-        <div>
-          <SearchBox
-            input={input}
-            handleInputChange={handleInputChange}
-            handleSearchClick={handleSearchClick}
-            suggestionState={suggestionState}
-            suggestionDataArray={suggestionDataArray}
-            handleItemClick={handleItemClick}
-          />
-        </div>
-      </div>
 
-      <div id="store-item-root-inMain-container">
-        {shops.map((item: any): any => {
-          return (
-            <Item key={item.id} data={item} storePath={storePath} selectedItem={selectedItem} />
-          );
-        })}
-      </div>
+      {shops.length > 0 ? (
+        <>
+          <div id="store-location-search-container">
+            <h1>Nos magasins à proximité</h1>
+            <div>
+              <SearchBox
+                input={input}
+                handleInputChange={handleInputChange}
+                handleSearchClick={handleSearchClick}
+                suggestionState={suggestionState}
+                suggestionDataArray={suggestionDataArray}
+                handleItemClick={handleItemClick}
+              />
+            </div>
+          </div>
+
+          <div id="store-item-root-inMain-container">
+            {shops.map((item: any): any => {
+              return (
+                <Item key={item.id} data={item} storePath={storePath} selectedItem={selectedItem} />
+              );
+            })}
+          </div>
+        </>
+      ) : (
+        <h2 style={{ margin: "15vh 0 " }}>
+          no shops were added for this store , wait for our new shops soon
+        </h2>
+      )}
     </main>
   );
 }
