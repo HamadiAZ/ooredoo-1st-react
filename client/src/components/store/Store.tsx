@@ -3,7 +3,7 @@ import { useParams } from "react-router-dom";
 import Item from "./item";
 import "../../styles/store.css";
 
-import { ShopObjectJSONType } from "../../types/types";
+import { ShopObjectType, ShopObjectWithDistanceIncluded } from "../../types/types";
 import SearchBox from "../searchBox";
 //icons
 import Gallery from "./gallery";
@@ -11,8 +11,11 @@ import Gallery from "./gallery";
 
 export default function Store({ globalPath }: { globalPath: string }): JSX.Element {
   // vars & states
-
-  const [shops, setShops] = useState<ShopObjectJSONType[]>([]);
+  type shopId = number;
+  const distancesForEveryShop: { [key: shopId]: number } = {};
+  let distancesForEveryShopV2: [[shopId, number]] = [[0, 0]];
+  //{shopid:distance}
+  const [shops, setShops] = useState<ShopObjectWithDistanceIncluded[]>([]);
 
   let store_id: number = parseInt(useParams().storeId || "");
   const storePath = globalPath + "/stores/" + store_id;
@@ -20,8 +23,11 @@ export default function Store({ globalPath }: { globalPath: string }): JSX.Eleme
   async function getAllShops() {
     try {
       const response = await fetch(`http://localhost:5000/api/getShops/${store_id}`);
-      let data: ShopObjectJSONType[] = await response.json();
-      setShops(data);
+      let data: ShopObjectType[] = await response.json();
+      const shops: ShopObjectWithDistanceIncluded[] = data.map((item) => {
+        return { ...item, distance: 0 };
+      });
+      setShops(shops);
     } catch (error: any) {
       console.error(error.message);
     }
@@ -29,7 +35,7 @@ export default function Store({ globalPath }: { globalPath: string }): JSX.Eleme
   const [input, setInput] = useState({ address: "sfax" });
   const [suggestionState, setSuggestionState] = useState<boolean>(false);
   const [suggestionDataArray, setSuggestionDataArray] = useState([]);
-  const [selectedItem, setSelectedItem] = useState({
+  const [selectedLocation, setSelectedLocation] = useState({
     latitude: 34.74056,
     longitude: 10.76028,
     name: "Sfax",
@@ -49,7 +55,7 @@ export default function Store({ globalPath }: { globalPath: string }): JSX.Eleme
     // item men l map array  : from API
     setSuggestionState(false);
     setInput({ address: item.label });
-    setSelectedItem(item);
+    setSelectedLocation(item);
   }
 
   function handleInputChange(event: React.ChangeEvent<HTMLInputElement>) {
@@ -81,9 +87,19 @@ export default function Store({ globalPath }: { globalPath: string }): JSX.Eleme
           </div>
 
           <div id="store-item-root-inMain-container">
-            {shops.map((item: any): any => {
+            {shops.map((item: ShopObjectWithDistanceIncluded): any => {
               return (
-                <Item key={item.id} data={item} storePath={storePath} selectedItem={selectedItem} />
+                <Item
+                  numberOfShops={shops.length}
+                  shops={shops}
+                  key={item.id}
+                  data={item}
+                  storePath={storePath}
+                  selectedLocation={selectedLocation}
+                  setShops={setShops}
+                  distancesForEveryShop={distancesForEveryShop}
+                  distancesForEveryShopV2={distancesForEveryShopV2}
+                />
               );
             })}
           </div>

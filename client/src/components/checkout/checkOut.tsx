@@ -11,7 +11,7 @@ import {
   basketProductType,
   scheduleCheckoutObjectType,
   Selector,
-  ShopObjectJSONType,
+  ShopObjectType,
   orderToDb,
   LoggedInState,
 } from "../../types/types";
@@ -60,7 +60,7 @@ export default function CheckOut({
 
   const [finalCountdown, setFinalCountdown] = useState<number>(initCountdown);
   const [orderStatus, setOrderStatus] = useState<string>("not-ordered");
-  const [shopData, setShopData] = useState<ShopObjectJSONType>(ShopDataInit);
+  const [shopData, setShopData] = useState<ShopObjectType>(ShopDataInit);
   const [selectorState, dispatch] = useReducer(reducer, initialState);
   const [orderId, setOrderId] = useState<string>("");
 

@@ -22,7 +22,8 @@ export type addShopInputType = {
 
 export type imageGalleryArrayType = string[];
 
-export type ShopObjectJSONType = {
+export type ShopObjectType = {
+  id: number;
   store_id: number;
   name: string;
   address: { address: string; lat: number; long: number };
@@ -38,6 +39,26 @@ export type ShopObjectJSONType = {
     cc: boolean;
   };
   schedule: fullScheduleGroupType[];
+};
+
+export type ShopObjectWithDistanceIncluded = {
+  id: number;
+  store_id: number;
+  name: string;
+  address: { address: string; lat: number; long: number };
+  mdv: {
+    surplace: boolean;
+    delivery: boolean;
+    export: boolean;
+  };
+  mdp: {
+    cash: boolean;
+    check: boolean;
+    voucher: boolean;
+    cc: boolean;
+  };
+  schedule: fullScheduleGroupType[];
+  distance: number;
 };
 
 export type scheduleCheckoutObjectType = {

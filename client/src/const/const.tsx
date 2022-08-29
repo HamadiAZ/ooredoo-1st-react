@@ -1,4 +1,4 @@
-import { daysOfWeekType, ProductsDataArrayType, ShopObjectJSONType } from "../types/types";
+import { daysOfWeekType, ProductsDataArrayType, ShopObjectType } from "../types/types";
 
 export const globalPath: string = "http://localhost:5000";
 export const daysOfWeek: daysOfWeekType = {
@@ -10,7 +10,8 @@ export const daysOfWeek: daysOfWeekType = {
   5: "fri",
   6: "sat",
 };
-export const ShopDataInit: ShopObjectJSONType = {
+export const ShopDataInit: ShopObjectType = {
+  id: 0,
   store_id: 9999,
   name: "empty",
   address: { address: "a", lat: 1, long: 1 },

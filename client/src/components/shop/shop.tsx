@@ -6,7 +6,7 @@ import ScheduleTable from "./scheduleTable";
 import ProductMenu from "./productMenu";
 
 import {
-  ShopObjectJSONType,
+  ShopObjectType,
   ScheduleOfEveryDayType,
   scheduleObjectType,
   singleProductObjectType,
@@ -52,7 +52,7 @@ export default function Shop({
     schedule: scheduleObjectType[];
   }>({ day: "", schedule: [] });
 
-  const [shopData, setShopData] = useState<ShopObjectJSONType>(ShopDataInit);
+  const [shopData, setShopData] = useState<ShopObjectType>(ShopDataInit);
 
   const { loginStatus }: { loginStatus: LoggedInState; getLoginStatus: () => Promise<void> } =
     useContext(AuthContext);
@@ -214,9 +214,8 @@ export default function Shop({
     return false;
   }
 
-  function getScheduleOfShop(): any {
+  function getScheduleOfShop(): ScheduleOfEveryDayType {
     let ScheduleOfEveryDayConst: ScheduleOfEveryDayType = initialState;
-
     const { schedule } = shopData;
     for (let i = 0; i < 7; i++) {
       for (let group of schedule) {
@@ -235,12 +234,10 @@ export default function Shop({
       }
     }
     const currentDay: string = getCurrenDayAsString();
-
     let currentDaySchedule =
       ScheduleOfEveryDayConst[currentDay as keyof typeof ScheduleOfEveryDayConst];
     if (isShopOpenNow()) {
       //green background somewhere
-
       let index = -1;
       let startingIndex = 0;
       currentDaySchedule.forEach((item) => {
@@ -256,7 +253,6 @@ export default function Shop({
       for (let i = startingIndex; i < currentDaySchedule.length; i++) {
         tempUpcomingSchedule.push(currentDaySchedule[i]);
       }
-
       setUpcomingSessions({
         // for checkout Page
         day: "today",
@@ -266,23 +262,19 @@ export default function Shop({
       // shop is closed now // blue background somewhere
       let dayIndex = d.getDay();
       const arrayOfUpcomingSessionsOfaDay: scheduleObjectType[] = [];
-
       for (let counter = 0; counter < 8; counter++) {
         let day = daysOfWeek[dayIndex as keyof typeof daysOfWeek]; // current day
         //day index is actual day index corresponding to day position in the week;
         // counter just to ensure a full week loop
         let scheduleOfDay = ScheduleOfEveryDayConst[day as keyof typeof ScheduleOfEveryDayConst];
         let dayFound = false;
-
         if (scheduleOfDay.length) {
           //only if the day has opened sessions
           if (counter === 0) {
             // current day
             // find the next session
-
             let previousSessionsOfTodayCounter = -1; // for setUpcomingSessions
             // for adding to basket
-
             for (let singleSession of scheduleOfDay) {
               if (checkIfItWillOpenInThisSessionOfToday(singleSession)) {
                 dayFound = true;
@@ -290,7 +282,6 @@ export default function Shop({
                 arrayOfUpcomingSessionsOfaDay.push(singleSessionCopy);
               } else previousSessionsOfTodayCounter++; // for setUpcomingSessions
             }
-
             // previousSessionsOfTodayCounter: count how many session already gone today
             // so we dont give them as an option when ordering
             let index = 0;
@@ -306,7 +297,6 @@ export default function Shop({
                 }
                 index++;
               }
-
               setUpcomingSessions({
                 day: "today",
                 schedule: [...nextSchedulesOfToday],
@@ -329,7 +319,6 @@ export default function Shop({
                 dayFound = true;
                 const daySessionCopy = [...scheduleOfDay];
                 arrayOfUpcomingSessionsOfaDay.push(...daySessionCopy);
-
                 break;
               }
             }
@@ -339,7 +328,6 @@ export default function Shop({
         dayIndex = dayIndex < 6 ? dayIndex + 1 : 0; //check the first day of the next week..
       }
       //find the minimum startH : first session
-
       let orderTempArrayOfStartH = [];
       if (arrayOfUpcomingSessionsOfaDay.length) {
         orderTempArrayOfStartH = arrayOfUpcomingSessionsOfaDay.map((item) => item.startH);
@@ -355,12 +343,9 @@ export default function Shop({
               arrayOfUpcomingSessionsOfaDay.findIndex((x) => x.startH === item)
             ]
         );
-
         //if (returnUpcomingScheduleArrayInsted) return upcomingDaySessions;
-
         // lets make the next schedule sttus true :
         let nextStartH = orderTempArrayOfStartH[0];
-
         let scheduleToChange = getScheduleToChange(
           dayIndex,
           nextStartH,
@@ -368,17 +353,13 @@ export default function Shop({
           ScheduleOfEveryDayConst
         );
         scheduleToChange.currentOrNextOne = true; // done
-
         //console.log("upcoming sessions", upcomingDaySessions);
-
         //associate the day to his schedule
-
         setUpcomingSessions((prev) => {
           return { ...prev, schedule: upcomingDaySessions };
         });
       }
     }
-
     return ScheduleOfEveryDayConst;
   }
 
@@ -447,7 +428,7 @@ export default function Shop({
     return false;
   }
 
-  const scheduleOfEveryDay = useMemo(() => getScheduleOfShop(), [shopData]);
+  const scheduleOfEveryDay: ScheduleOfEveryDayType = useMemo(() => getScheduleOfShop(), [shopData]);
 
   //socket
 
@@ -472,7 +453,7 @@ export default function Shop({
 
       <h1>welcome to ooredoo {name} shop</h1>
       <p>
-        {"our shop is now "}
+        our shop is now
         {isShopOpenNow() ? (
           <span style={{ color: "#02992a", fontWeight: "bold" }}>Opened</span>
         ) : (
@@ -490,14 +471,16 @@ export default function Shop({
       <ProductMenu handleAddToCard={handleAddToCard} />
 
       <div className="shop-div-double-items-flex-container">
-        {/*  <iframe
+        {
+          <iframe
             id="gmap_canvas"
             src={`https://maps.google.com/maps?q=${lat},${long}&t=&z=13&ie=UTF8&iwloc=&output=embed`}
             frameBorder={0}
             scrolling="no"
             marginHeight={0}
             marginWidth={0}
-          /> */}
+          />
+        }
 
         <div className="div-card-text">
           <h4>About us</h4>

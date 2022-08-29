@@ -1,4 +1,4 @@
-import { ShopObjectJSONType } from "../../types/types";
+import { ShopObjectType } from "../../types/types";
 
 //icons
 
@@ -9,7 +9,7 @@ import { AiOutlineShoppingCart } from "react-icons/ai";
 import { BiPackage } from "react-icons/bi";
 import { TbTruckDelivery } from "react-icons/tb";
 
-export default function paymentMethods({ shopData }: { shopData: ShopObjectJSONType }) {
+export default function paymentMethods({ shopData }: { shopData: ShopObjectType }) {
   return (
     <div className="shop-payment-methods-flex-container">
       <div className="shop-single-payment-methods-flex-container">

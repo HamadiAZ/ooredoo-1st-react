@@ -4,7 +4,7 @@ import SearchBox from "../searchBox";
 import GroupsOfSchedule from "./groupsOfSchedule";
 
 import {
-  ShopObjectJSONType,
+  ShopObjectType,
   fullScheduleGroupType,
   StoreObjectJSONType,
   addShopInputType,
@@ -96,7 +96,8 @@ export default function AddShop(props: any) {
   }
   async function handleSubmit(event: any): Promise<void> {
     event.preventDefault();
-    let jsonObjectToSend: ShopObjectJSONType = {
+    let jsonObjectToSend: ShopObjectType = {
+      id: 0,
       store_id: input.store,
       name: input.name,
       address: { address: input.address, lat: input.lat, long: input.long },
