@@ -1,6 +1,7 @@
-import { useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 
 import { orderToDb } from "../../../types/types";
+import AuthContext from "../../context/authContext";
 import SinglePromptManager from "./singlePromptManager";
 
 export default function AllOrdersPromptManager({ socket, shopId }: any) {
@@ -11,6 +12,8 @@ export default function AllOrdersPromptManager({ socket, shopId }: any) {
       return prev.filter((singlePrompt) => singlePrompt.key != orderId);
     });
   }
+
+  const { loginStatus } = useContext(AuthContext);
 
   useEffect(() => {
     socket.on(
@@ -47,7 +50,7 @@ export default function AllOrdersPromptManager({ socket, shopId }: any) {
     });
   }, []);
 
-  if (promptArrayState.length > 0)
+  if (promptArrayState.length > 0 && loginStatus.isLoggedIn && loginStatus.privilege === "admin")
     return <div id="shop-admin-order-confirmation-prompt">{promptArrayState}</div>;
 
   return <> </>;
