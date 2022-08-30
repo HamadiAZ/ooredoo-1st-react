@@ -25,7 +25,6 @@ type propsType = {
   setShops: React.Dispatch<SetStateAction<ShopObjectWithDistanceIncluded[]>>;
   distancesForEveryShop: { [key: number]: number };
   shops: ShopObjectWithDistanceIncluded[];
-  distancesForEveryShopV2: [[number, number]];
 };
 export default function Item({
   numberOfShops,
@@ -35,7 +34,6 @@ export default function Item({
   setShops,
   distancesForEveryShop,
   shops,
-  distancesForEveryShopV2,
 }: propsType): JSX.Element {
   const options = {
     method: "GET",
@@ -60,14 +58,22 @@ export default function Item({
     long2: number
   ): Promise<void> {
     try {
-      /* let res = await fetch(
+      let res = await fetch(
         `https://distance-calculator.p.rapidapi.com/distance/simple?lat_1=${lat1}&long_1=%20${long1}&lat_2=${lat2}&long_2=${long2}&decimal_places=2`,
         options
       );
       let APIdata = await res.json();
       if (APIdata.distance === undefined) APIdata.distance = 0;
       distancesForEveryShop[data.id] = APIdata.distance;
-      distancesForEveryShopV2.push([data.id, APIdata.distance]); */
+      //distancesForEveryShop[data.id] = data.id; // enabled for test / save api purposes
+      if (Object.keys(distancesForEveryShop).length >= numberOfShops) {
+        // i did this to change the state one single time at the end
+        // when every item has calculated its distance and set the value in the parent object : distancesForEveryShop
+        // when the object has the same number of shops === all shops have registered their distance
+        // then we editDistancesAfterApiCalls which sort the shops by distance and set shops state to rerender the parent 1 single time
+        editDistancesAfterApiCalls();
+        //console.log(distancesForEveryShop);
+      }
     } catch (error) {
       console.error(error);
     }
@@ -134,13 +140,11 @@ export default function Item({
   function editDistancesAfterApiCalls() {
     const ShopArrayAfterDistanceEdit = shops.map((item: ShopObjectWithDistanceIncluded) => {
       let distance = 0;
-      distancesForEveryShopV2.forEach((array) => {
-        if (item.id == array[0]) distance = array[1];
-      });
+      distance = distancesForEveryShop[item.id];
       return { ...item, distance: distance };
     });
     const SortedShopsByDistance = ShopArrayAfterDistanceEdit.sort(compareDistanceFn);
-    console.log("sorted", SortedShopsByDistance);
+    //console.log("sorted", SortedShopsByDistance);
     setShops(SortedShopsByDistance);
     function compareDistanceFn(
       a: ShopObjectWithDistanceIncluded,
@@ -160,19 +164,6 @@ export default function Item({
       shopAddress.long
     );
   }, [selectedLocation]);
-
-  useEffect((): void => {
-    console.log(distancesForEveryShop);
-    console.log(Object.getOwnPropertyNames(distancesForEveryShop));
-    // i did this to change the state one single time at the end
-    // when every item has calculated its distance and set the value in the parent object : distancesForEveryShop
-    // when the object has the same number of shops === all shops have registered their distance
-    // then we editDistancesAfterApiCalls which sort the shops by distance and set shops state to rerender the parent 1 single time
-    if (Object.keys(distancesForEveryShop).length > numberOfShops) {
-      editDistancesAfterApiCalls();
-      console.log(distancesForEveryShop);
-    }
-  }, [Object.keys(distancesForEveryShop).length]);
 
   // console.log("shops ", shops);
   return (

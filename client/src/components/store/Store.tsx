@@ -13,8 +13,7 @@ export default function Store({ globalPath }: { globalPath: string }): JSX.Eleme
   // vars & states
   type shopId = number;
   const distancesForEveryShop: { [key: shopId]: number } = {};
-  let distancesForEveryShopV2: [[shopId, number]] = [[0, 0]];
-  //{shopid:distance}
+
   const [shops, setShops] = useState<ShopObjectWithDistanceIncluded[]>([]);
 
   let store_id: number = parseInt(useParams().storeId || "");
@@ -98,7 +97,6 @@ export default function Store({ globalPath }: { globalPath: string }): JSX.Eleme
                   selectedLocation={selectedLocation}
                   setShops={setShops}
                   distancesForEveryShop={distancesForEveryShop}
-                  distancesForEveryShopV2={distancesForEveryShopV2}
                 />
               );
             })}
