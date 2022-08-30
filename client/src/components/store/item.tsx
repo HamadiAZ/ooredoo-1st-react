@@ -58,14 +58,15 @@ export default function Item({
     long2: number
   ): Promise<void> {
     try {
-      let res = await fetch(
+      // disabled API
+      /* let res = await fetch(
         `https://distance-calculator.p.rapidapi.com/distance/simple?lat_1=${lat1}&long_1=%20${long1}&lat_2=${lat2}&long_2=${long2}&decimal_places=2`,
         options
       );
       let APIdata = await res.json();
       if (APIdata.distance === undefined) APIdata.distance = 0;
-      distancesForEveryShop[data.id] = APIdata.distance;
-      //distancesForEveryShop[data.id] = data.id; // enabled for test / save api purposes
+      distancesForEveryShop[data.id] = APIdata.distance; */
+      distancesForEveryShop[data.id] = data.id; // enabled for test / save api purposes
       if (Object.keys(distancesForEveryShop).length >= numberOfShops) {
         // i did this to change the state one single time at the end
         // when every item has calculated its distance and set the value in the parent object : distancesForEveryShop
