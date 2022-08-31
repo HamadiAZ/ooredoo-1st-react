@@ -61,15 +61,12 @@ module.exports = async function (io: Socket) {
       //response of admins availability
       // if front i will check if onlineAdmins of this shop=[] then no admin is online
       const onlineAdminsOfRequestedShop = onlineAdmins.filter((item) => item[1] == shopId);
-      console.log("requested admins array", onlineAdminsOfRequestedShop);
       socket.emit("admins-availability", onlineAdminsOfRequestedShop, acceptOrderIfNoOnlineAdmin);
     });
 
     socket.on("checkout-prompt-from-client", (data: orderToDb, sendTimeInSeconds: number) => {
-      console.log("time: ", sendTimeInSeconds);
       const { shopId } = data;
       const orderId: string = uuid();
-      console.log(pendingOrders);
       clientsWithPendingOrders.push([socket.id, orderId, shopId]);
       // send to online admins of this the same shop
       onlineAdmins.forEach((adminInfo) => {
