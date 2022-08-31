@@ -5,11 +5,12 @@ import Menu from "./menu";
 import { products } from "../../const/const";
 import { ProductsDataArrayType, menuObjectType, singleProductObjectType } from "../../types/types";
 
-export default function ProductMenu({
-  handleAddToCard,
-}: {
+type propsType = {
   handleAddToCard: (item: singleProductObjectType) => void;
-}) {
+};
+
+export default function ProductMenu({ handleAddToCard }: propsType) {
+  //function body
   const [data, setData] = useState<ProductsDataArrayType>(products);
 
   const [selectedMenu, setSelectedMenu] = useState<string>("");

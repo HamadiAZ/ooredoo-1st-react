@@ -1,6 +1,24 @@
 html {
   scroll-behavior: smooth;
 }
+
+.shop-warning-auto-accepted-orders-container {
+  box-sizing: border-box;
+  max-width: 70rem;
+  min-width: 15rem;
+  height: fit-content;
+  background-color: rgb(252, 213, 213);
+  margin: 1rem auto 0 auto;
+  padding: 0.5rem 0;
+  border-radius: 8px;
+  box-shadow: 0 0 2px rgba(0, 0, 0, 0.1);
+  border: solid 2px rgb(237, 0, 0);
+}
+.shop-warning-auto-accepted-orders-container p {
+  margin: 0.5rem 0;
+  font-size: 1.1rem;
+  font-weight: bold;
+}
 .shop-div-schedule-root-container {
   display: grid;
   grid-template-rows: 1fr;
@@ -9,6 +27,37 @@ html {
   max-width: 40rem;
   margin: 2rem auto;
   border: solid 1px black;
+}
+
+#shop-admin-pending-orders-container {
+  height: fit-content;
+  padding: 1rem 0;
+  display: flex;
+  justify-content: center;
+  flex-direction: column;
+}
+
+#shop-admin-pending-orders-container table {
+  gap: 2rem;
+  width: 100%;
+  border: solid 1px;
+  padding: 1rem 0.6rem;
+}
+
+#shop-admin-pending-orders-container th {
+  text-align: center;
+  min-width: 5rem;
+}
+#shop-admin-pending-orders-container td {
+  height: 2.3rem;
+  text-align: center;
+  box-shadow: 2px 2px 2px rgba(0, 0, 0, 0.2);
+}
+#shop-admin-pending-orders-container p {
+  margin: 0 auto;
+}
+#shop-admin-pending-orders-container tr:hover {
+  background-color: coral;
 }
 
 .shop-main-menu-container {
@@ -20,6 +69,48 @@ html {
   object-fit: contain;
   gap: 3rem;
 }
+#shop-admin-order-confirmation-prompt {
+  border-radius: 15px;
+  position: absolute;
+  bottom: 3vh;
+  right: 3vw;
+  min-width: 26rem;
+  min-height: 10rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-evenly;
+  gap: 1rem;
+  padding: 0;
+}
+
+#shop-admin-order-confirmation-prompt div {
+  margin-bottom: 0rem;
+}
+#shop-admin-single-order-confirmation-prompt {
+  border-radius: 15px;
+  background-color: rgb(232, 232, 232);
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.6);
+  position: relative;
+  min-width: 26rem;
+  min-height: 10rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 0;
+  padding-bottom: 1rem;
+}
+
+.prompt-two-buttons-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.prompt-two-buttons-container button {
+  margin: 0 0.2rem;
+  font-weight: bold;
+  font-size: 1.01rem;
+}
+
 #shop-product-families-navigator-container {
   border-bottom-left-radius: 4px;
   border-bottom-right-radius: 4px;

@@ -4,7 +4,9 @@ import Prompt from "./prompt";
 import { MdDelete } from "react-icons/md";
 import { orderFromDb } from "../../types/types";
 
-export default function Orders({ globalPath }: { globalPath: string }) {
+import { globalPath } from "../../const/const";
+
+export default function Orders() {
   const [orders, setOrders] = useState<orderFromDb[]>([]);
   const [promptState, setPromptState] = useState<{ show: boolean; order: any }>({
     show: false,
@@ -13,8 +15,16 @@ export default function Orders({ globalPath }: { globalPath: string }) {
 
   async function getOrders(): Promise<void> {
     try {
-      let res = await fetch(globalPath + "/api/admin/getOrders/");
+      let res = await fetch(globalPath + "/api/admin/getOrders", {
+        credentials: "include",
+        headers: {
+          Accept: "application/json",
+          "Content-Type": "application/json",
+        },
+      });
       let data: orderFromDb[] = await res.json();
+      console.log(data);
+
       setOrders(data);
     } catch (error) {
       console.error(error);
@@ -29,6 +39,11 @@ export default function Orders({ globalPath }: { globalPath: string }) {
     try {
       const res = await fetch(globalPath + "/api/admin/DeleteOrder/" + item.order_id, {
         method: "PUT",
+        credentials: "include",
+        headers: {
+          Accept: "application/json",
+          "Content-Type": "application/json",
+        },
       });
       const reply = await res.json();
       setOrders(orders.filter((prevItem: typeof orders[0]) => prevItem.order_id !== item.order_id));
@@ -55,6 +70,7 @@ export default function Orders({ globalPath }: { globalPath: string }) {
               <th>date</th>
               <th>paiement</th>
               <th>md vente</th>
+              <th>status</th>
               <th>pick up date</th>
               <th>delivery address</th>
               <th>content</th>
@@ -73,6 +89,7 @@ export default function Orders({ globalPath }: { globalPath: string }) {
                   <td>{item.created_at}</td>
                   <td>{item.mdp}</td>
                   <td>{item.mdv}</td>
+                  <td>{item.status}</td>
                   <td>{item.delivery_time} </td>
                   <td>{item.delivery_addr}</td>
                   <td>

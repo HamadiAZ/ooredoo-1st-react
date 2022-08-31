@@ -22,7 +22,8 @@ export type addShopInputType = {
 
 export type imageGalleryArrayType = string[];
 
-export type ShopObjectJSONType = {
+export type ShopObjectType = {
+  id: number;
   store_id: number;
   name: string;
   address: { address: string; lat: number; long: number };
@@ -38,6 +39,26 @@ export type ShopObjectJSONType = {
     cc: boolean;
   };
   schedule: fullScheduleGroupType[];
+};
+
+export type ShopObjectWithDistanceIncluded = {
+  id: number;
+  store_id: number;
+  name: string;
+  address: { address: string; lat: number; long: number };
+  mdv: {
+    surplace: boolean;
+    delivery: boolean;
+    export: boolean;
+  };
+  mdp: {
+    cash: boolean;
+    check: boolean;
+    voucher: boolean;
+    cc: boolean;
+  };
+  schedule: fullScheduleGroupType[];
+  distance: number;
 };
 
 export type scheduleCheckoutObjectType = {
@@ -100,6 +121,7 @@ export type singleProductObjectType = {
   type: "product";
   price: number;
 };
+
 export type subMenuObjectType = {
   manufacture: string;
   products: singleProductObjectType[];
@@ -151,7 +173,9 @@ export type orderContentType = {
   quantity: number;
   quantityLeft: number;
   shopId: number;
+  status: string;
 };
+
 export type orderToDb = {
   shopId: number;
   userId: number;
@@ -160,8 +184,10 @@ export type orderToDb = {
   mdv: string;
   deliveryTime: string;
   deliveryAddr: string;
+  status: string;
   content: orderContentType[];
 };
+
 export type orderFromDb = {
   order_id: number;
   shop_id: number;
@@ -172,5 +198,43 @@ export type orderFromDb = {
   created_at: string;
   delivery_addr: string;
   delivery_time: string;
+  status: string;
   content: orderContentType[];
+};
+export type orderFromDbJsFormat = {
+  orderId: number;
+  shopId: number;
+  userId: number;
+  userName: string;
+  mdp: string;
+  mdv: string;
+  deliveryTime: string;
+  deliveryAddr: string;
+  status: string;
+  content: orderContentType[];
+};
+
+export type authenticationStateType = {
+  emailLogin: string;
+  passwordLogin: string;
+  usernameReg: string;
+  nameReg: string;
+  emailReg: string;
+  passwordReg: string;
+};
+export enum authenticationStateENUM {
+  emailLogin = "emailLogin",
+  passwordLogin = "passwordLogin",
+  usernameReg = "usernameReg",
+  nameReg = "nameReg",
+  emailReg = "emailReg",
+  passwordReg = "passwordReg",
+}
+
+export type LoggedInState = {
+  id: number;
+  isLoggedIn: boolean;
+  privilege: string;
+  name: string;
+  username: string;
 };

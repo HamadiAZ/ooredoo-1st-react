@@ -1,21 +1,27 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useContext } from "react";
 import { useParams } from "react-router-dom";
-import ScheduleTable from "./scheduleTable";
+import { io } from "socket.io-client";
 
+import ScheduleTable from "./scheduleTable";
 import ProductMenu from "./productMenu";
 
 import {
-  ShopObjectJSONType,
+  ShopObjectType,
   ScheduleOfEveryDayType,
   scheduleObjectType,
   singleProductObjectType,
   basketProductType,
   daysOfWeekType,
+  LoggedInState,
 } from "../../types/types";
+
 import { daysOfWeek, ShopDataInit, products } from "../../const/const";
 
 import "../../styles/shop.css";
 import PaymentMethods from "./paymentMethods";
+import AuthContext from "../context/authContext";
+import AllOrdersPromptManager from "./orderPrompt/allOrdersPromptManager";
+import AutoAcceptedOrdersManager from "./autoAcceptedOrders/autoAcceptedOrdersManager";
 
 const initialState = {
   mon: [],
@@ -26,6 +32,7 @@ const initialState = {
   sat: [],
   san: [],
 };
+const socket = io("localhost:5000");
 
 export default function Shop({
   globalPath,
@@ -38,14 +45,17 @@ export default function Shop({
 }): JSX.Element {
   let { shopId } = useParams();
 
-  let upcomingTodaySessions: scheduleObjectType[] = [];
+  let upcomingDaySessions: scheduleObjectType[] = [];
 
   const [upcomingSessions, setUpcomingSessions] = useState<{
     day: string;
     schedule: scheduleObjectType[];
   }>({ day: "", schedule: [] });
 
-  const [shopData, setShopData] = useState<ShopObjectJSONType>(ShopDataInit);
+  const [shopData, setShopData] = useState<ShopObjectType>(ShopDataInit);
+
+  const { loginStatus }: { loginStatus: LoggedInState; getLoginStatus: () => Promise<void> } =
+    useContext(AuthContext);
 
   async function getShopData(): Promise<void> {
     try {
@@ -84,7 +94,6 @@ export default function Shop({
   }
 
   function handleAddToCard(item: singleProductObjectType): void {
-    console.log("contains others:", checkIfBasketConainElementFromOtherShops());
     const newItemInfo = getProductInfo(item.name);
     const newItem: basketProductType = {
       product_id: item.id,
@@ -97,7 +106,7 @@ export default function Shop({
       shopId: parseInt(shopId || "0"),
       shopUpcomingSessions: upcomingSessions,
     };
-    if (!checkIfBasketConainElementFromOtherShops()) {
+    if (!checkIfBasketContainElementFromOtherShops()) {
       setShoppingBasket((prev: basketProductType[]) => {
         const arrayOfProductNames: string[] = prev.map((item: basketProductType) => item.name);
 
@@ -125,7 +134,7 @@ export default function Shop({
     }
   }
 
-  function checkIfBasketConainElementFromOtherShops(): boolean {
+  function checkIfBasketContainElementFromOtherShops(): boolean {
     if (!shoppingBasket.length) return false; // basket empty
     if (shoppingBasket[0].shopId !== parseInt(shopId || shoppingBasket[0].shopId)) return true;
     //shopId || shoppingBasket[0].shopId so if the first one is undefined dont block the code
@@ -138,6 +147,10 @@ export default function Shop({
   const name = shopData ? shopData.name : "";
 
   const d = new Date();
+
+  let styleSpanOfCurrentSchedule = isShopOpenNow()
+    ? { backgroundColor: "#42c966", color: "white" }
+    : { backgroundColor: "#424dc9", color: "white" };
 
   function getCurrenDayAsString(): string {
     const dayNumber: number = d.getDay();
@@ -153,6 +166,8 @@ export default function Shop({
       for (let group of schedule) {
         if ((group.days as any)[currentDay]) {
           for (let singleSession of group.schedule) {
+            //console.log(singleSession);
+            if (singleSession.fulltime === true) return true;
             if (singleSession.startH < hoursNow && hoursNow < singleSession.endH) return true;
             if (
               // time is 9:10 // session 9:20 =>9:30
@@ -168,6 +183,7 @@ export default function Shop({
               singleSession.endM > minutesNow
             )
               return true;
+
             if (
               // time is 8:30 // session 8:20 =>9:30
               singleSession.startH == hoursNow &&
@@ -177,11 +193,12 @@ export default function Shop({
               return true;
             if (
               // time 15:45 // session 15:10=>15:40
-              singleSession.startH <= hoursNow &&
+              singleSession.startH === hoursNow &&
               hoursNow === singleSession.endH &&
               singleSession.endM < minutesNow
             )
               return false;
+
             if (
               // time 15:45 // session 15:10=>15:40
               singleSession.startH === hoursNow &&
@@ -197,9 +214,8 @@ export default function Shop({
     return false;
   }
 
-  function getScheduleOfShop(): any {
+  function getScheduleOfShop(): ScheduleOfEveryDayType {
     let ScheduleOfEveryDayConst: ScheduleOfEveryDayType = initialState;
-
     const { schedule } = shopData;
     for (let i = 0; i < 7; i++) {
       for (let group of schedule) {
@@ -218,18 +234,15 @@ export default function Shop({
       }
     }
     const currentDay: string = getCurrenDayAsString();
-
     let currentDaySchedule =
       ScheduleOfEveryDayConst[currentDay as keyof typeof ScheduleOfEveryDayConst];
     if (isShopOpenNow()) {
       //green background somewhere
-      //console.log("cuurent", currentDaySchedule);
-
       let index = -1;
       let startingIndex = 0;
       currentDaySchedule.forEach((item) => {
         index++;
-        if (checkIfItsCurrentScheduleActiveTime(item)) {
+        if (checkIfItsCurrentScheduleActiveTime(item) || item.fulltime) {
           startingIndex = index;
           item.currentOrNextOne = true;
         } else {
@@ -240,7 +253,6 @@ export default function Shop({
       for (let i = startingIndex; i < currentDaySchedule.length; i++) {
         tempUpcomingSchedule.push(currentDaySchedule[i]);
       }
-
       setUpcomingSessions({
         // for checkout Page
         day: "today",
@@ -256,16 +268,13 @@ export default function Shop({
         // counter just to ensure a full week loop
         let scheduleOfDay = ScheduleOfEveryDayConst[day as keyof typeof ScheduleOfEveryDayConst];
         let dayFound = false;
-
         if (scheduleOfDay.length) {
           //only if the day has opened sessions
           if (counter === 0) {
             // current day
             // find the next session
-
             let previousSessionsOfTodayCounter = -1; // for setUpcomingSessions
             // for adding to basket
-
             for (let singleSession of scheduleOfDay) {
               if (checkIfItWillOpenInThisSessionOfToday(singleSession)) {
                 dayFound = true;
@@ -273,7 +282,6 @@ export default function Shop({
                 arrayOfUpcomingSessionsOfaDay.push(singleSessionCopy);
               } else previousSessionsOfTodayCounter++; // for setUpcomingSessions
             }
-
             // previousSessionsOfTodayCounter: count how many session already gone today
             // so we dont give them as an option when ordering
             let index = 0;
@@ -289,7 +297,6 @@ export default function Shop({
                 }
                 index++;
               }
-
               setUpcomingSessions({
                 day: "today",
                 schedule: [...nextSchedulesOfToday],
@@ -303,7 +310,6 @@ export default function Shop({
           } else {
             //upcoming days
             //find the first session of the next DAY THAT THE SHOP IS OPENED AT
-
             for (let singleSession of scheduleOfDay) {
               if (singleSession) {
                 setUpcomingSessions({
@@ -322,30 +328,38 @@ export default function Shop({
         dayIndex = dayIndex < 6 ? dayIndex + 1 : 0; //check the first day of the next week..
       }
       //find the minimum startH : first session
-
-      let orderTempArray = [];
+      let orderTempArrayOfStartH = [];
       if (arrayOfUpcomingSessionsOfaDay.length) {
-        orderTempArray = arrayOfUpcomingSessionsOfaDay.map((item) => item.startH);
-        orderTempArray.sort();
-        upcomingTodaySessions = orderTempArray.map(
+        orderTempArrayOfStartH = arrayOfUpcomingSessionsOfaDay.map((item) => item.startH);
+        //console.log("not ordered", orderTempArrayOfStartH);
+        orderTempArrayOfStartH.sort((a, b) => {
+          if (a > b) return 1;
+          if (a < b) return -1;
+          return 0;
+        });
+        upcomingDaySessions = orderTempArrayOfStartH.map(
           (item) =>
             arrayOfUpcomingSessionsOfaDay[
               arrayOfUpcomingSessionsOfaDay.findIndex((x) => x.startH === item)
             ]
         );
-
-        //if (returnUpcomingScheduleArrayInsted) return upcomingTodaySessions;
-        let nextStartH = orderTempArray[0];
+        //if (returnUpcomingScheduleArrayInsted) return upcomingDaySessions;
+        // lets make the next schedule sttus true :
+        let nextStartH = orderTempArrayOfStartH[0];
         let scheduleToChange = getScheduleToChange(
           dayIndex,
           nextStartH,
           daysOfWeek,
           ScheduleOfEveryDayConst
         );
-        scheduleToChange.currentOrNextOne = true;
+        scheduleToChange.currentOrNextOne = true; // done
+        //console.log("upcoming sessions", upcomingDaySessions);
+        //associate the day to his schedule
+        setUpcomingSessions((prev) => {
+          return { ...prev, schedule: upcomingDaySessions };
+        });
       }
     }
-
     return ScheduleOfEveryDayConst;
   }
 
@@ -414,33 +428,48 @@ export default function Shop({
     return false;
   }
 
+  const scheduleOfEveryDay: ScheduleOfEveryDayType = useMemo(() => getScheduleOfShop(), [shopData]);
+
+  //socket
+
+  useEffect(() => {
+    if (loginStatus.isLoggedIn && loginStatus.privilege === "admin") {
+      console.log("admin");
+      socket.emit("shop-admin-is-online", parseInt(shopId || "0"));
+    }
+  }, [loginStatus.isLoggedIn]);
+
   useEffect(() => {
     getShopData();
   }, []);
 
-  const scheduleOfEveryDay = useMemo(() => getScheduleOfShop(), [shopData]);
-
-  let styleSpanOfCurrentSchedule = isShopOpenNow()
-    ? { backgroundColor: "#42c966", color: "white" }
-    : { backgroundColor: "#424dc9", color: "white" };
-
   return (
     <div>
+      <AllOrdersPromptManager socket={socket} shopId={shopId} />
+
+      {loginStatus.privilege === "admin" && (
+        <AutoAcceptedOrdersManager socket={socket} shopId={shopId} />
+      )}
+
       <h1>welcome to ooredoo {name} shop</h1>
       <p>
-        {"our shop is now "}
+        our shop is now
         {isShopOpenNow() ? (
           <span style={{ color: "#02992a", fontWeight: "bold" }}>Opened</span>
         ) : (
           <span style={{ color: "#b80000", fontWeight: "bold" }}>Closed</span>
         )}
       </p>
+
       <ScheduleTable
         scheduleOfEveryDay={scheduleOfEveryDay}
         styleSpanOfCurrentSchedule={styleSpanOfCurrentSchedule}
       />
+
       <PaymentMethods shopData={shopData} />
+
       <ProductMenu handleAddToCard={handleAddToCard} />
+
       <div className="shop-div-double-items-flex-container">
         {
           <iframe

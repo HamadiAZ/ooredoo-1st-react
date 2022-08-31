@@ -23,9 +23,7 @@ export default function Gallery({
 
   async function getGalleryImagesArray() {
     try {
-      let res = await fetch(
-        "http://localhost:5000/api/getGalleryListOfStore/" + store_id
-      );
+      let res = await fetch("http://localhost:5000/api/getGalleryListOfStore/" + store_id);
       GalleryImagesArray = await res.json();
       setNumberOfImages(GalleryImagesArray.length);
     } catch (error) {
@@ -62,22 +60,25 @@ export default function Gallery({
   }, [galleryCounter]);
 
   return (
-    <div className="image-gallery">
-      <img src={galleryCurrentImage} />
-      <div id="store-hidden-div--gallery-buttons-container">
-        <div
-          className="arrows-leftandright-divs"
-          onClick={(): void => updateImage("left")}
-        >
-          <AiOutlineArrowLeft className="gallery-arrows" />s
+    <>
+      {numberOfImages > 0 ? (
+        <div className="image-gallery">
+          <img src={galleryCurrentImage} />
+          <div id="store-hidden-div--gallery-buttons-container">
+            <div className="arrows-leftandright-divs" onClick={(): void => updateImage("left")}>
+              <AiOutlineArrowLeft className="gallery-arrows" />
+            </div>
+            <div className="arrows-leftandright-divs" onClick={(): void => updateImage("right")}>
+              <AiOutlineArrowRight className="gallery-arrows" />
+            </div>
+          </div>
         </div>
-        <div
-          className="arrows-leftandright-divs"
-          onClick={(): void => updateImage("right")}
-        >
-          <AiOutlineArrowRight className="gallery-arrows" />
-        </div>
-      </div>
-    </div>
+      ) : (
+        <>
+          <h1> welcome to our store</h1>
+          <p>gallery isn't added yet</p>
+        </>
+      )}
+    </>
   );
 }

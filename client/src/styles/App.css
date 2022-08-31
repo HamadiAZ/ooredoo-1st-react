@@ -229,6 +229,13 @@ header {
   border-style: none;
   margin-top: 0.2rem;
 }
+
+.auth-icons-green {
+  color: rgb(2, 189, 2);
+}
+.auth-icons-red {
+  color: rgb(215, 0, 0);
+}
 #conditionsGeneraleList {
   text-align: left;
   list-style: none;
@@ -375,7 +382,7 @@ footer {
 }
 
 #prompt-root-container {
-  position: absolute;
+  position: fixed;
   margin: 0;
   padding: 0;
   width: 100%;
@@ -385,6 +392,8 @@ footer {
   display: flex;
   justify-content: center;
   align-items: center;
+  bottom: 0;
+  overflow: auto;
 }
 #prompt-content-container {
   background-color: white;
