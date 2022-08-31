@@ -70,12 +70,12 @@ module.exports = async function (io: Socket) {
       socket.emit("admins-availability", onlineAdminsOfRequestedShop, acceptOrderIfNoOnlineAdmin);
     });
 
-    socket.on("checkout-prompt-from-client", (data: orderToDb) => {
+    socket.on("checkout-prompt-from-client", (data: orderToDb, sendTimeInSeconds: number) => {
       const { shopId } = data;
       const orderId: string = uuid();
       const con = !isShopAdminOnline(shopId) && acceptOrderIfNoOnlineAdmin;
       if (con) {
-        addOrderToPendingOrders(orderId, shopId, socket.id, data);
+        addOrderToPendingOrders(orderId, shopId, socket.id, data, sendTimeInSeconds);
       }
       console.log(pendingOrders);
       clientsWithPendingOrders.push([socket.id, orderId, shopId]);
@@ -90,7 +90,8 @@ module.exports = async function (io: Socket) {
               socket.id,
               data,
               orderId,
-              acceptOrderIfNoOnlineAdmin
+              acceptOrderIfNoOnlineAdmin,
+              sendTimeInSeconds
             );
       });
       //send order id back to client
@@ -138,13 +139,15 @@ function addOrderToPendingOrders(
   orderId: string,
   shopId: number,
   clientId: number,
-  data: orderToDb
+  data: orderToDb,
+  sendTimeInSeconds: number
 ) {
   const newOrder: shopPendingOrder = {
     id: orderId,
     shopId,
     clientId,
     data,
+    sendTimeInSeconds,
   };
   if (pendingOrders[shopId]?.length >= 0) {
     // here i will push  : array of shop already defined

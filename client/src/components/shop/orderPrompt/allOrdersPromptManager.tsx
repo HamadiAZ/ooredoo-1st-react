@@ -23,7 +23,8 @@ export default function AllOrdersPromptManager({ socket, shopId }: any) {
         socketId: string,
         data: orderToDb,
         orderId: string,
-        autoAcceptSetting: boolean
+        autoAcceptSetting: boolean,
+        sendTimeInSeconds: number
       ) => {
         setPromptArrayState((prev) => [
           ...prev,
@@ -36,6 +37,7 @@ export default function AllOrdersPromptManager({ socket, shopId }: any) {
             data={data}
             handleHidePrompt={handleHidePrompt}
             autoAcceptSetting={autoAcceptSetting}
+            sendTimeInSeconds={sendTimeInSeconds}
           />,
         ]);
       }

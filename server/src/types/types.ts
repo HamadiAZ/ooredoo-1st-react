@@ -11,6 +11,7 @@ export type shopPendingOrder = {
   shopId: number;
   clientId: number;
   data: orderToDb;
+  sendTimeInSeconds: number;
 };
 
 export type addShopInputType = {

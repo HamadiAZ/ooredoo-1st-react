@@ -11,6 +11,7 @@ export default function SinglePromptManager({
   orderId,
   handleHidePrompt,
   autoAcceptSetting,
+  sendTimeInSeconds,
 }: {
   shopId: number;
   socket: any;
@@ -19,6 +20,7 @@ export default function SinglePromptManager({
   orderId: string;
   handleHidePrompt: (arg: string) => void;
   autoAcceptSetting: boolean;
+  sendTimeInSeconds: number;
 }) {
   const [showOrderConfirmationPrompt, setShowOrderConfirmationPrompt] = useState<boolean>(false);
   const [promptCountDown, setPromptCountDown] = useState<number>(57);
@@ -30,6 +32,16 @@ export default function SinglePromptManager({
     setClientId(clientId);
     setShowOrderConfirmationPrompt(true);
     setOrderConfirmationPromptData(data);
+    const checkoutOrderTimeout = 59; //seconds when waiting for admin
+    const timeNowInSec = Math.round(Date.now() / 1000);
+    const countdownSecondsSynced = checkoutOrderTimeout - (timeNowInSec - sendTimeInSeconds);
+    // if when the order was sent , sendTimeInSeconds is 10000100 seconds (from 1970)
+    // received here late by 5 seconds , timeNowInSec is 10000105 sec
+    // the countdown started with checkoutOrderTimeout : 59seconds
+    // so when order is received here , countdown in checkout page is out of sync by 5 sec : 54seconds
+    // we calculate the countdown to start with here by : 59 - (10000105-10000100) = 54seconds= countdownSecondsSynced
+    setPromptCountDown(countdownSecondsSynced);
+    //  setPromptCountDown(57); // old version
     startPromptCountDown = true;
   }
 

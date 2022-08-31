@@ -207,7 +207,8 @@ export default function CheckOut({
     startCounting = true;
     if (adminsOnline) {
       setFinalCountdown(initCountdown);
-      socket.emit("checkout-prompt-from-client", dataBody);
+      const sendTimeInSeconds = Math.round(Date.now() / 1000);
+      socket.emit("checkout-prompt-from-client", dataBody, sendTimeInSeconds);
       setOrderStatus("waiting for admin confirmation");
       return;
     }
