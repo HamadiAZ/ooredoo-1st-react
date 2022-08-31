@@ -12,13 +12,13 @@ const app = express(); // run the express library
 app.use(
   cors({
     methods: ["GET", "POST", "PUT"],
-    origin: [FRONT_END_LINK],
+    origin: FRONT_END_LINK,
     credentials: true, //IMPORTANT
     //enable cookies
   })
 );
 
-typeof app.use(
+app.use(
   session({
     secret: "test", //this key will sign the cookie
     resave: false, // resave : every request will have a new session

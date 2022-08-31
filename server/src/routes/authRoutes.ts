@@ -42,17 +42,6 @@ router.post("/reg", async (req, res) => {
   }
 });
 
-/*
-  //Session login 
-  router.get("/login", async (req, res) => {
-    //console.log(req.session.id);
-    if (req.session.user) {
-      res.send({ loggedIn: true, user: req.session.user });
-    } else {
-      res.send({ loggedIn: false });
-    }
-  }); */
-
 router.get("/loginStatus", async (req, res) => {
   try {
     const { token } = req.cookies;

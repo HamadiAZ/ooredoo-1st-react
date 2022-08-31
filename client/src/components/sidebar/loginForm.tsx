@@ -31,6 +31,7 @@ export default function LoginForm({
       method: "POST",
       body: JSON.stringify(user),
       credentials: "include",
+      mode: "cors",
       headers: {
         Accept: "application/json",
         "Content-Type": "application/json",

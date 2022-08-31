@@ -1,13 +1,9 @@
 import { Router, Request, Response } from "express";
-import cors from "cors";
 import { pool } from "../db";
 import { loggedInStateType, orderFromDb, orderToDb } from "../types/types";
-import { corsOptions } from "../const/const";
 const router = Router();
 
 //            client apis /////////////////////////////////////////////////////////
-
-router.use(cors(corsOptions));
 
 router.put("/updateClientOrdersStatus", async (req: Request, res: Response) => {
   try {

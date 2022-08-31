@@ -69,10 +69,6 @@ module.exports = async function (io: Socket) {
       console.log("time: ", sendTimeInSeconds);
       const { shopId } = data;
       const orderId: string = uuid();
-      /*       const con = !isShopAdminOnline(shopId) && acceptOrderIfNoOnlineAdmin;
-      if (con) {
-        addOrderToPendingOrders(orderId, shopId, socket.id, data, sendTimeInSeconds);
-      } */
       console.log(pendingOrders);
       clientsWithPendingOrders.push([socket.id, orderId, shopId]);
       // send to online admins of this the same shop
@@ -99,19 +95,11 @@ module.exports = async function (io: Socket) {
       (isConfirmed: boolean, clientId: number, orderId: string, shopId: number) => {
         socket.to(clientId).emit("order-confirmation-to-user", isConfirmed);
         const con = !isShopAdminOnline(shopId) && acceptOrderIfNoOnlineAdmin;
-        /*         if (con) {
-          deletePendingOrder(shopId, orderId); // finished
-        } */
       }
     );
 
     socket.on("from-client--cancel-order-after-sent", (orderId: string, shopId: number) => {
       console.log("cancel : ", orderId);
-      //const con = !isShopAdminOnline(shopId) && acceptOrderIfNoOnlineAdmin;
-      /*       if (con) {
-        deletePendingOrder(shopId, orderId); // finished
-      } */
-
       onlineAdmins.forEach((adminInfo) => {
         if (shopId == adminInfo[1])
           socket.to(adminInfo[0]).emit("cancel-pending-order-admin", orderId, socket.id);
@@ -131,29 +119,6 @@ function isShopAdminOnline(shopId: number) {
   return isOnline;
 }
 
-/* function addOrderToPendingOrders(
-  orderId: string,
-  shopId: number,
-  clientId: number,
-  data: orderToDb,
-  sendTimeInSeconds: number
-) {
-  const newOrder: shopPendingOrder = {
-    id: orderId,
-    shopId,
-    clientId,
-    data,
-    sendTimeInSeconds,
-  };
-  if (pendingOrders[shopId]?.length >= 0) {
-    // here i will push  : array of shop already defined
-    pendingOrders[shopId].push(newOrder);
-  } else {
-    // here i will affect cuz not defined
-    pendingOrders[shopId] = [newOrder];
-  }
-} */
-
 async function getPendingOrdersForShopFromDb(shopId: number) {
   try {
     const data: any = await pool.query(
@@ -165,20 +130,3 @@ async function getPendingOrdersForShopFromDb(shopId: number) {
     console.error(error.message);
   }
 }
-
-/* function deletePendingOrder(shopId: number, orderId: string) {
-  if (pendingOrders[shopId]?.length >= 0) {
-    pendingOrders[shopId] = pendingOrders[shopId].filter((order) => order.id != orderId);
-  } else {
-    console.log("something went wrong, order already deleted ??");
-  }
-} */
-/* function getPendingOrdersForShop(shopId) {
-  if (pendingOrders[shopId]?.length >= 0) {
-    //  array of shop orders already defined
-    return pendingOrders[shopId];
-  } else {
-    // undefined
-    return [];
-  }
-} */
