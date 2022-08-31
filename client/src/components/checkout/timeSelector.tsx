@@ -1,3 +1,4 @@
+import { isScheduleInTime } from "../../functions/functions";
 import {
   basketProductType,
   scheduleCheckoutObjectType,
@@ -99,67 +100,9 @@ function checkIfTimeInSchedule(
   h: number = -1,
   m: number = -1
 ): boolean {
-  const d = new Date();
-  // if no time giver , it will compare it to current time
-  const hoursNow = d.getHours();
-  const minutesNow = d.getMinutes();
-
-  const hoursToCompare = h === -1 ? hoursNow : h; // hours given as parameters
-  const minutesToCompare = h === -1 ? minutesNow : m;
-
   if (singleSession) {
-    if (singleSession.startH < hoursToCompare && hoursToCompare < singleSession.endH) return true;
-    if (
-      // time is 9:10 // session 9:20 =>9:30
-      singleSession.startH === hoursToCompare &&
-      hoursToCompare < singleSession.endH &&
-      singleSession.startM > minutesToCompare
-    )
-      return false;
-    if (
-      // time is 9:10 // session 8:20 =>9:30
-      singleSession.startH < hoursToCompare &&
-      hoursToCompare == singleSession.endH &&
-      singleSession.endM > minutesToCompare
-    )
-      return true;
-    if (
-      // time is 8:30 // session 8:20 =>9:30
-      singleSession.startH == hoursToCompare &&
-      hoursToCompare < singleSession.endH &&
-      singleSession.startM < minutesToCompare
-    )
-      return true;
-    if (
-      // time is 8:30 // session 8:20 =>8:30
-      singleSession.startH == hoursToCompare &&
-      hoursToCompare === singleSession.endH &&
-      singleSession.startM < minutesToCompare &&
-      singleSession.endM <= minutesToCompare
-    )
-      return true;
-    if (
-      // time is 8:30 // session 7:20 =>8:30
-      singleSession.startH < hoursToCompare &&
-      hoursToCompare === singleSession.endH &&
-      singleSession.endM >= minutesToCompare
-    )
-      return true;
-    if (
-      // time 15:45 // session 15:10=>15:40
-      singleSession.startH <= hoursToCompare &&
-      hoursToCompare === singleSession.endH &&
-      singleSession.endM < minutesToCompare
-    )
-      return false;
-    if (
-      // time 15:45 // session 15:10=>15:48
-      singleSession.startH === hoursToCompare &&
-      hoursToCompare === singleSession.endH &&
-      singleSession.endM > minutesToCompare &&
-      singleSession.startM < minutesToCompare
-    )
-      return true;
+    const res = isScheduleInTime(singleSession, h, m);
+    if (res === true || res === false) return res;
   }
   return false;
 }

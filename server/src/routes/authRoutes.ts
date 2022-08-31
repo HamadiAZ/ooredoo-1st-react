@@ -24,12 +24,6 @@ router.post("/reg", async (req, res) => {
         `);
       if (newUser.hasOwnProperty("rows")) {
         const token = jwt.sign({ userId: newUser.rows[0].username }, JWTpassword);
-
-        // send it in cookie ,and not any cookie: HTTP-only cookie
-        // so it cant be accessed via JS in the browser (offline / if hacker injected code to Frontend)
-        // where normal cookies are like local storage : can be accessed by js
-        //res.cookie("name",value,optionObject) : define a cookie
-
         const cookieOptions = {
           httpOnly: true, // http cookie for security
         };

@@ -4,12 +4,6 @@ import { pool } from "../db";
 import { orderFromDb } from "../types/types";
 const router = Router();
 //            admin apis /////////////////////////////////////////////////////////
-/* 
-router : 
-we specified in index.js that /api/admin are redirected to this router
-so the paths here are built on top of the previous source : index.js
-so for example /addShop here is in reality  /api/admin + /addShop 
- */
 
 router.post("/addShop", authAdmin, async (req: Request, res: Response) => {
   try {
