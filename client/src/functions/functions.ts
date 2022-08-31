@@ -1,4 +1,4 @@
-import { scheduleObjectType } from "../../types/types";
+import { scheduleObjectType } from "../types/types";
 
 export function isScheduleInTime(singleSession: scheduleObjectType): boolean | undefined {
   const d = new Date();
