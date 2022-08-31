@@ -22,7 +22,7 @@ import PaymentMethods from "./paymentMethods";
 import AuthContext from "../context/authContext";
 import AllOrdersPromptManager from "./orderPrompt/allOrdersPromptManager";
 import AutoAcceptedOrdersManager from "./autoAcceptedOrders/autoAcceptedOrdersManager";
-import { isScheduleInTime } from "../functions/functions";
+import { isScheduleInTime } from "../../functions/functions";
 
 const initialState = {
   mon: [],

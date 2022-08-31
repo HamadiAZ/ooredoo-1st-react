@@ -11,7 +11,7 @@ import { BiPackage } from "react-icons/bi";
 import { TbTruckDelivery } from "react-icons/tb";
 //types
 import { ShopObjectWithDistanceIncluded } from "../../types/types";
-import { isScheduleInTime } from "../functions/functions";
+import { isScheduleInTime } from "../../functions/functions";
 type selectedLocationType = {
   latitude: number;
   longitude: number;
