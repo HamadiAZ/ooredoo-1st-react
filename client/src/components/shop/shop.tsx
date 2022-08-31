@@ -22,6 +22,7 @@ import PaymentMethods from "./paymentMethods";
 import AuthContext from "../context/authContext";
 import AllOrdersPromptManager from "./orderPrompt/allOrdersPromptManager";
 import AutoAcceptedOrdersManager from "./autoAcceptedOrders/autoAcceptedOrdersManager";
+import { isScheduleInTime } from "../functions/functions";
 
 const initialState = {
   mon: [],
@@ -166,47 +167,8 @@ export default function Shop({
       for (let group of schedule) {
         if ((group.days as any)[currentDay]) {
           for (let singleSession of group.schedule) {
-            //console.log(singleSession);
-            if (singleSession.fulltime === true) return true;
-            if (singleSession.startH < hoursNow && hoursNow < singleSession.endH) return true;
-            if (
-              // time is 9:10 // session 9:20 =>9:30
-              singleSession.startH === hoursNow &&
-              hoursNow < singleSession.endH &&
-              singleSession.startM > minutesNow
-            )
-              return false;
-            if (
-              // time is 9:10 // session 8:20 =>9:30
-              singleSession.startH < hoursNow &&
-              hoursNow == singleSession.endH &&
-              singleSession.endM > minutesNow
-            )
-              return true;
-
-            if (
-              // time is 8:30 // session 8:20 =>9:30
-              singleSession.startH == hoursNow &&
-              hoursNow < singleSession.endH &&
-              singleSession.startM < minutesNow
-            )
-              return true;
-            if (
-              // time 15:45 // session 15:10=>15:40
-              singleSession.startH === hoursNow &&
-              hoursNow === singleSession.endH &&
-              singleSession.endM < minutesNow
-            )
-              return false;
-
-            if (
-              // time 15:45 // session 15:10=>15:40
-              singleSession.startH === hoursNow &&
-              hoursNow === singleSession.endH &&
-              singleSession.endM > minutesNow &&
-              singleSession.startM < minutesNow
-            )
-              return true;
+            const res = isScheduleInTime(singleSession);
+            if (res === true || res === false) return res;
           }
         }
       }
@@ -242,7 +204,7 @@ export default function Shop({
       let startingIndex = 0;
       currentDaySchedule.forEach((item) => {
         index++;
-        if (checkIfItsCurrentScheduleActiveTime(item) || item.fulltime) {
+        if (!!isScheduleInTime(item) || item.fulltime) {
           startingIndex = index;
           item.currentOrNextOne = true;
         } else {
@@ -382,49 +344,6 @@ export default function Shop({
     const minutesNow = d.getMinutes();
     if (hoursNow < singleSession.endH) return true;
     if (hoursNow === singleSession.endH && minutesNow <= singleSession.endM) return true;
-    return false;
-  }
-
-  function checkIfItsCurrentScheduleActiveTime(singleSession: any): boolean {
-    const hoursNow = d.getHours();
-    const minutesNow = d.getMinutes();
-    if (singleSession.startH < hoursNow && hoursNow < singleSession.endH) return true;
-    if (
-      // time is 9:10 // session 9:20 =>9:30
-      singleSession.startH === hoursNow &&
-      hoursNow < singleSession.endH &&
-      singleSession.startM > minutesNow
-    )
-      return false;
-    if (
-      // time is 9:10 // session 8:20 =>9:30
-      singleSession.startH < hoursNow &&
-      hoursNow == singleSession.endH &&
-      singleSession.endM > minutesNow
-    )
-      return true;
-    if (
-      // time is 8:30 // session 8:20 =>9:30
-      singleSession.startH == hoursNow &&
-      hoursNow < singleSession.endH &&
-      singleSession.startM < minutesNow
-    )
-      return true;
-    if (
-      // time 15:45 // session 15:10=>15:40
-      singleSession.startH <= hoursNow &&
-      hoursNow === singleSession.endH &&
-      singleSession.endM < minutesNow
-    )
-      return false;
-    if (
-      // time 15:45 // session 15:10=>15:40
-      singleSession.startH === hoursNow &&
-      hoursNow === singleSession.endH &&
-      singleSession.endM > minutesNow &&
-      singleSession.startM < minutesNow
-    )
-      return true;
     return false;
   }
 

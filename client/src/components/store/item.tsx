@@ -1,4 +1,4 @@
-import { useState, useEffect, SetStateAction } from "react";
+import { useEffect, SetStateAction } from "react";
 import { Link } from "react-router-dom";
 
 import { daysOfWeek } from "../../const/const";
@@ -11,6 +11,7 @@ import { BiPackage } from "react-icons/bi";
 import { TbTruckDelivery } from "react-icons/tb";
 //types
 import { ShopObjectWithDistanceIncluded } from "../../types/types";
+import { isScheduleInTime } from "../functions/functions";
 type selectedLocationType = {
   latitude: number;
   longitude: number;
@@ -86,52 +87,13 @@ export default function Item({
   }
 
   function isShopOpen(): boolean {
-    const hoursNow = d.getHours();
-    const minutesNow = d.getMinutes();
     const currentDay = getCurrenDayAsString();
     const { schedule } = data;
-
     for (let group of schedule) {
       if (group.days[currentDay as keyof typeof group.days]) {
         for (let singleSession of group.schedule) {
-          if (singleSession.fulltime === true) return true;
-          if (singleSession.startH < hoursNow && hoursNow < singleSession.endH) return true;
-          if (
-            // time is 9:10 // session 9:20 =>9:30
-            singleSession.startH === hoursNow &&
-            hoursNow < singleSession.endH &&
-            singleSession.startM > minutesNow
-          )
-            return false;
-          if (
-            // time is 9:10 // session 8:20 =>9:30
-            singleSession.startH < hoursNow &&
-            hoursNow == singleSession.endH &&
-            singleSession.endM > minutesNow
-          )
-            return true;
-          if (
-            // time is 8:30 // session 8:20 =>9:30
-            singleSession.startH == hoursNow &&
-            hoursNow < singleSession.endH &&
-            singleSession.startM < minutesNow
-          )
-            return true;
-          if (
-            // time 15:45 // session 15:10=>15:40
-            singleSession.startH <= hoursNow &&
-            hoursNow === singleSession.endH &&
-            singleSession.endM < minutesNow
-          )
-            return false;
-          if (
-            // time 15:45 // session 15:10=>15:40
-            singleSession.startH === hoursNow &&
-            hoursNow === singleSession.endH &&
-            singleSession.endM > minutesNow &&
-            singleSession.startM < minutesNow
-          )
-            return true;
+          const res = isScheduleInTime(singleSession);
+          if (res === true || res === false) return res;
         }
       }
     }
