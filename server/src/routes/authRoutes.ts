@@ -1,9 +1,8 @@
-import express, { Request, Response, Router } from "express";
+import { Router } from "express";
 import jwt from "jsonwebtoken";
 import { pool } from "../db";
 import bcrypt from "bcrypt";
-
-const JWTpassword = "e98fZf4eGeEbergre2zaFSSFS81FF8FZ7e";
+import { JWTpassword } from "../const/const";
 
 const router = Router();
 

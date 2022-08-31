@@ -26,6 +26,7 @@ export default function AllOrdersPromptManager({ socket, shopId }: any) {
         autoAcceptSetting: boolean,
         sendTimeInSeconds: number
       ) => {
+        console.log("client send time ", sendTimeInSeconds);
         setPromptArrayState((prev) => [
           ...prev,
           <SinglePromptManager

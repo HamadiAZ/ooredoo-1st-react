@@ -1,6 +1,6 @@
 import jwt from "jsonwebtoken";
-import { Request, Response, NextFunction } from "express";
-const JWTpassword = "e98fZf4eGeEbergre2zaFSSFS81FF8FZ7e";
+import { Response, NextFunction } from "express";
+import { JWTpassword } from "../const/const";
 
 function auth(req: any, res: Response, next: NextFunction) {
   try {

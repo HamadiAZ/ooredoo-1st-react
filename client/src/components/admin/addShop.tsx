@@ -148,7 +148,7 @@ export default function AddShop(props: any) {
   }, []);
 
   async function getListStore() {
-    let res = await fetch(props.globalPath + "/api/getStores");
+    let res = await fetch(props.globalPath + "/api/surf/getStores");
     let data = await res.json();
     setStores(data);
   }

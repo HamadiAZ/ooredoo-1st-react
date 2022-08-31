@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { imageGalleryArrayType } from "../../types/types";
 //icons
 import { AiOutlineArrowLeft, AiOutlineArrowRight } from "react-icons/ai";
+import { globalPath } from "../../const/const";
 
 //main
 let lastTimeMainImageChanged: number = 0;
@@ -23,7 +24,7 @@ export default function Gallery({
 
   async function getGalleryImagesArray() {
     try {
-      let res = await fetch("http://localhost:5000/api/getGalleryListOfStore/" + store_id);
+      let res = await fetch(globalPath + "/api/surf/getGalleryListOfStore/" + store_id);
       GalleryImagesArray = await res.json();
       setNumberOfImages(GalleryImagesArray.length);
     } catch (error) {

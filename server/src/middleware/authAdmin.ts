@@ -1,8 +1,7 @@
-import jwt, { Jwt, JwtPayload } from "jsonwebtoken";
-import express, { Request, Response, NextFunction } from "express";
+import jwt from "jsonwebtoken";
+import { Request, Response, NextFunction } from "express";
 import { pool } from "../db";
-
-const JWTpassword = "e98fZf4eGeEbergre2zaFSSFS81FF8FZ7e";
+import { JWTpassword } from "../const/const";
 
 //
 

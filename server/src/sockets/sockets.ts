@@ -1,7 +1,5 @@
 //const { v4: uuid } = require("uuid");
-import { IOType } from "child_process";
 import { Socket } from "socket.io";
-import { IOptions } from "socketio-jwt";
 import { pool } from "../db";
 import { v4 as uuid } from "uuid";
 import {
@@ -17,9 +15,7 @@ const acceptOrderIfNoOnlineAdmin = true;
 
 // variables
 let onlineAdmins: onlineAdminType[] = [];
-
 let clientsWithPendingOrders: pendingOrdersType[] = [];
-
 let pendingOrders: { [key: number]: shopPendingOrder[] } = {};
 
 module.exports = async function (io: Socket) {
@@ -31,7 +27,6 @@ module.exports = async function (io: Socket) {
         if (onlineAdmin[0] === socket.id) userType = "admin";
         return onlineAdmin[0] != socket.id;
       });
-
       //if its client : same
       clientsWithPendingOrders = clientsWithPendingOrders.filter((clientOnline) => {
         // [clientId,orderId,shopId]
@@ -71,12 +66,13 @@ module.exports = async function (io: Socket) {
     });
 
     socket.on("checkout-prompt-from-client", (data: orderToDb, sendTimeInSeconds: number) => {
+      console.log("time: ", sendTimeInSeconds);
       const { shopId } = data;
       const orderId: string = uuid();
-      const con = !isShopAdminOnline(shopId) && acceptOrderIfNoOnlineAdmin;
+      /*       const con = !isShopAdminOnline(shopId) && acceptOrderIfNoOnlineAdmin;
       if (con) {
         addOrderToPendingOrders(orderId, shopId, socket.id, data, sendTimeInSeconds);
-      }
+      } */
       console.log(pendingOrders);
       clientsWithPendingOrders.push([socket.id, orderId, shopId]);
       // send to online admins of this the same shop
@@ -103,18 +99,18 @@ module.exports = async function (io: Socket) {
       (isConfirmed: boolean, clientId: number, orderId: string, shopId: number) => {
         socket.to(clientId).emit("order-confirmation-to-user", isConfirmed);
         const con = !isShopAdminOnline(shopId) && acceptOrderIfNoOnlineAdmin;
-        if (con) {
+        /*         if (con) {
           deletePendingOrder(shopId, orderId); // finished
-        }
+        } */
       }
     );
 
     socket.on("from-client--cancel-order-after-sent", (orderId: string, shopId: number) => {
       console.log("cancel : ", orderId);
-      const con = !isShopAdminOnline(shopId) && acceptOrderIfNoOnlineAdmin;
-      if (con) {
+      //const con = !isShopAdminOnline(shopId) && acceptOrderIfNoOnlineAdmin;
+      /*       if (con) {
         deletePendingOrder(shopId, orderId); // finished
-      }
+      } */
 
       onlineAdmins.forEach((adminInfo) => {
         if (shopId == adminInfo[1])
@@ -135,7 +131,7 @@ function isShopAdminOnline(shopId: number) {
   return isOnline;
 }
 
-function addOrderToPendingOrders(
+/* function addOrderToPendingOrders(
   orderId: string,
   shopId: number,
   clientId: number,
@@ -156,7 +152,7 @@ function addOrderToPendingOrders(
     // here i will affect cuz not defined
     pendingOrders[shopId] = [newOrder];
   }
-}
+} */
 
 async function getPendingOrdersForShopFromDb(shopId: number) {
   try {
@@ -170,13 +166,13 @@ async function getPendingOrdersForShopFromDb(shopId: number) {
   }
 }
 
-function deletePendingOrder(shopId: number, orderId: string) {
+/* function deletePendingOrder(shopId: number, orderId: string) {
   if (pendingOrders[shopId]?.length >= 0) {
     pendingOrders[shopId] = pendingOrders[shopId].filter((order) => order.id != orderId);
   } else {
     console.log("something went wrong, order already deleted ??");
   }
-}
+} */
 /* function getPendingOrdersForShop(shopId) {
   if (pendingOrders[shopId]?.length >= 0) {
     //  array of shop orders already defined

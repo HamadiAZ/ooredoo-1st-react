@@ -21,7 +21,7 @@ export default function Store({ globalPath }: { globalPath: string }): JSX.Eleme
 
   async function getAllShops() {
     try {
-      const response = await fetch(`http://localhost:5000/api/getShops/${store_id}`);
+      const response = await fetch(globalPath + `/api/surf/getShops/${store_id}`);
       let data: ShopObjectType[] = await response.json();
       const shops: ShopObjectWithDistanceIncluded[] = data.map((item) => {
         return { ...item, distance: 0 };

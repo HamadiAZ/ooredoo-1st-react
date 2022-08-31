@@ -74,7 +74,7 @@ export default function CheckOut({
 
   async function getShopData(shopId: number): Promise<void> {
     try {
-      let res = await fetch(globalPath + "/api/getShopData/" + shopId);
+      let res = await fetch(globalPath + "/api/surf/getShopData/" + shopId);
       let data: any = await res.json();
       data = data[0];
       setShopData(data);
@@ -112,7 +112,7 @@ export default function CheckOut({
   async function sendOrderToDb(orderStatus: string = "", changeOrderStatus: boolean = true) {
     orderContentToDb.status = orderStatus || "pending confirmation";
     try {
-      const res = await fetch(globalPath + "/api/order/newOrder", {
+      const res = await fetch(globalPath + "/api/client/newOrder", {
         method: "POST",
         body: JSON.stringify(orderContentToDb),
         mode: "cors",

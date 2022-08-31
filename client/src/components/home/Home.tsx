@@ -2,13 +2,14 @@ import { useState, useEffect } from "react";
 import Item from "./item";
 import { StoreObjectJSONType } from "../../types/types";
 import "../../styles/home.css";
+import { globalPath } from "../../const/const";
 
 export default function Home(): JSX.Element {
   const [stores, setStores] = useState<StoreObjectJSONType[]>([]);
 
   async function getAllStores(): Promise<void> {
     try {
-      const response = await fetch("http://localhost:5000/api/getStores");
+      const response = await fetch(globalPath + "/api/surf/getStores");
       let data: StoreObjectJSONType[] = await response.json();
       setStores(data);
     } catch (error: any) {

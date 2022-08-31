@@ -59,7 +59,7 @@ export default function Shop({
 
   async function getShopData(): Promise<void> {
     try {
-      let res = await fetch(globalPath + "/api/getShopData/" + shopId);
+      let res = await fetch(globalPath + "/api/surf/getShopData/" + shopId);
       let data: any = await res.json();
       data = data[0];
       setShopData(data);
